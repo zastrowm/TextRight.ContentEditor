@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>TypeScript HTML App</title>
+  <link rel="stylesheet" href="codemirror.css" type="text/css" />
+  <script src="codemirror.js"></script>
+  <script src="MathUtils.js"></script><script src="Utils.js"></script>
+  <script src="Internal/CharacterCategorizer.js"></script>
+  <script src="Internal/TextInputProcessor.js"></script>
+  <script src="Internal/BlockItem.js"></script>
+  <script src="Internal/ElementClasses.js"></script>
+  <script src="Internal/CursorNavigationState.js"></script>
+  <script src="Internal/PointPosition.js"></script>
+  <script src="Internal/DocumentCursor.js"></script>
+  <script src="Internal/EditDocument.js"></script>
+  <script src="Internal/DocumentModel.js"></script>
+  <script src="Internal/DocumentView.js"></script>
+  <script src="TextRight.js"></script>
+  <style>
+    .heading {
+      font-size: 2em;
+    }
+
+    .paragraph {
+      font-size: 1.1em;
+      color: blue;
+    }
+
+    .block {
+    }
+
+    #output #document span {
+      /* border: 1px solid #eee;*/
+    }
+
+    #document {
+      border: 1px solid green;
+      background-color: #eee;
+      cursor: text;
+      cursor: pointer;
+    }
+
+      #document block {
+        padding-bottom: .5em;
+        padding-top: .5em;
+        border: 1px solid rgba(0,0,0,.1);
+        display: block;
+      }
+
+      #document block p {
+        margin: 0px;
+        white-space: pre-wrap;
+        max-width: 400px;
+        border: 1px solid rgba(0,0,0,.1);
+      }
+
+      #document span {
+        border: 1px solid rgba(128,0,0,.1);
+      }
+
+    .__tr__-cursor {
+      border-left: 1px solid black;
+      position: absolute;
+      width: 1px;
+    }
+
+    .__tr__-textareaInput {
+      opacity: .1;
+      position: absolute;
+      height: 1px !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="output">
+    <div id="document">To change the way a picture fits in your document, click it and a button for layout options appears next to it. When you work on a table, click where you want to add a row or a column, and then click the plus sign. Reading is easier, too, in the new Reading view. You can collapse parts of the document and focus on the text you want. If you need to stop reading before you reach the end, Word remembers where you left off - even on another device.
+
+Next line</div>
+  </div>
+  <pre id="debug"></pre>
+</body>
+</html>

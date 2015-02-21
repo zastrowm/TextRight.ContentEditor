@@ -1,0 +1,7 @@
+*.map
+*.suo
+*.user
+*.js
+!Web-Editor/lib/*.js
+**/obj/**
+**/bin/**

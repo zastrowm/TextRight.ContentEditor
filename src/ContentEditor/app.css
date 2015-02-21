@@ -1,0 +1,21 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+}
+
+span {
+    font-style: italic;
+}
+
+[contenteditable="true"]:active,
+[contenteditable="true"]:focus {
+  border:none;
+  outline:none;
+}
+
+#content {
+  border: 1px solid black;
+}
+
+h1 {
+  min-height: 1em;
+}
