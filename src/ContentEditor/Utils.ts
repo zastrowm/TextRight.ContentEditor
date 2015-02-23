@@ -74,6 +74,21 @@
     }
 
     /**
+     * Get the index of the given node in the parent's given child list
+     */
+    public static findOffsetOf(node: Node): number {
+      var count = 0;
+      var curr = node.parentNode.firstChild;
+
+      while (curr !== node) {
+        count++;
+        curr = curr.nextSibling;
+      }
+
+      return count;
+    }
+
+    /**
      * Get the index of an element within the parent array
      * @return the index of child in parent.children, or -1 if it does
      *         not exist as a child of parent

@@ -9,5 +9,9 @@
     public static paragraph = "__tr__-paragraph";
     public static cursor = "__tr__-cursor";
     public static textareaInput = "__tr__-textareaInput";
+
+    public static selectionTop = "__tr__-selectionTop";
+    public static selectionMiddle = "__tr__-selectionMiddle";
+    public static selectionBottom = "__tr__-selectionBottom";
    }
  }

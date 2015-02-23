@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <title>TypeScript HTML App</title>
+  <script src="Utils.js"></script>
   <script src="Internal/CharacterCategorizer.js"></script>
   <script src="Internal/TextInputProcessor.js"></script>
   <script src="Internal/BlockItem.js"></script>
@@ -13,6 +14,7 @@
   <script src="Internal/DocumentCursor.js"></script>
   <script src="Internal/EditDocument.js"></script>
   <script src="Internal/DocumentModel.js"></script>
+  <script src="Internal/SelectionPresenter.js"></script>
   <script src="Internal/DocumentView.js"></script>
   <script src="TextRight.js"></script>
   <style>
@@ -67,6 +69,14 @@
       opacity: .1;
       position: absolute;
       height: 1px !important;
+    }
+
+    #document .__tr__-selectionTop,  #document .__tr__-selectionMiddle, #document .__tr__-selectionBottom{
+      position: absolute;
+      background-color: black;
+      z-index: 0;
+      opacity: .1;
+      pointer-events: none;
     }
   </style>
 </head>

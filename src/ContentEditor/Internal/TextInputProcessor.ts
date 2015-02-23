@@ -2,20 +2,24 @@
   import StringUtils = TextRight.Utils.StringUtils;
 
   export interface IInputHandler {
+
+    /** selection/insertion management */
+    moveUp(shouldExtendSelection: boolean);
+    moveDown(shouldExtendSelection: boolean);
+    navigateLeft(shouldExtendSelection: boolean);
+    navigateRight(shouldExtendSelection: boolean);
+    handleEnd(shouldExtendSelection: boolean);
+    handleHome(shouldExtendSelection: boolean);
+    navigateBlockUp(shouldExtendSelection: boolean);
+    navigateBlockDown(shouldExtendSelection: boolean);
+    navigateWordLeft(shouldExtendSelection: boolean);
+    navigateWordRight(shouldExtendSelection: boolean);
+
+    /** Text manipulation methods */
     handleTextAddition(text: string);
-    moveUp();
-    moveDown();
-    navigateLeft();
-    navigateRight();
     handleBackspace();
     handleDelete();
     handleEnter();
-    handleEnd();
-    handleHome();
-    navigateBlockUp();
-    navigateBlockDown();
-    navigateWordLeft();
-    navigateWordRight();
   }
 
   export class TextInputProcessor {
@@ -27,7 +31,7 @@
     private isPasteIncoming = false;
     private isCutIncoming = false;
 
-    constructor(private element: HTMLTextAreaElement,private handler: IInputHandler) {
+    constructor(private element: HTMLTextAreaElement, private handler: IInputHandler) {
       if (element == null)
         throw "Not a valid element";
 
@@ -85,48 +89,51 @@
       return false;
     }
 
-    /**
-     * Is only the CTRL key held down for the given keyboard event
-     */
-    private isControlOnly(evt: KeyboardEvent) {
-      return evt.ctrlKey
-        && !evt.shiftKey
-        && !evt.altKey
-        && !evt.metaKey;
+    private isShiftDown(evt: KeyboardEvent): boolean {
+      return evt.shiftKey;
+    }
+
+    /** Check if the control key is down for the gi*/
+    private isControlDown(evt: KeyboardEvent): boolean {
+      return evt.ctrlKey;
     }
 
     /** Handle the case where the user pressed a key down. */
     private handleKeyDown(evt: KeyboardEvent) {
+
+      var isCtrlDown = evt.ctrlKey;
+      var shouldExtendSelections = evt.shiftKey;
+
       switch (evt.keyCode) {
         case KeyboardConstants.left:
-          if (this.isControlOnly(evt)) {
-            this.handler.navigateWordLeft();
+          if (isCtrlDown) {
+            this.handler.navigateWordLeft(shouldExtendSelections);
           } else {
-            this.handler.navigateLeft();
+            this.handler.navigateLeft(shouldExtendSelections);
           }
           evt.preventDefault();
           break;
         case KeyboardConstants.right:
-          if (this.isControlOnly(evt)) {
-            this.handler.navigateWordRight();
+          if (isCtrlDown) {
+            this.handler.navigateWordRight(shouldExtendSelections);
           } else {
-            this.handler.navigateRight();
+            this.handler.navigateRight(shouldExtendSelections);
           }
           evt.preventDefault();
           break;
         case KeyboardConstants.up:
-          if (this.isControlOnly(evt)) {
-            this.handler.navigateBlockUp();
+          if (isCtrlDown) {
+            this.handler.navigateBlockUp(shouldExtendSelections);
           } else {
-            this.handler.moveUp();
+            this.handler.moveUp(shouldExtendSelections);
           }
           evt.preventDefault();
           break;
         case KeyboardConstants.down:
-          if (this.isControlOnly(evt)) {
-            this.handler.navigateBlockDown();
+          if (isCtrlDown) {
+            this.handler.navigateBlockDown(shouldExtendSelections);
           } else {
-            this.handler.moveDown();
+            this.handler.moveDown(shouldExtendSelections);
           }
           evt.preventDefault();
           break;
@@ -143,11 +150,11 @@
           evt.preventDefault();
           break;
         case KeyboardConstants.end:
-          this.handler.handleEnd();
+          this.handler.handleEnd(shouldExtendSelections);
           evt.preventDefault();
           break;
         case KeyboardConstants.home:
-          this.handler.handleHome();
+          this.handler.handleHome(shouldExtendSelections);
           evt.preventDefault();
           break;
       }
