@@ -45,12 +45,17 @@
       this.selectionPresenter = new TextRight.Editor.Internal.SelectionPresenter(element);
 
       this.markTyping();
-      this.refreshCursorView(false);
+      this.redrawCaretAndSelection();
 
       element.addEventListener('resize', () => this.handleResize());
       window.addEventListener('resize', () => this.handleResize());
 
       var inputProcessor = new DocumentInputProcessor(this.element, this.inputTextArea, this);
+    }
+
+    /** true if there is currently a selection. */
+    private get hasSelection(): boolean {
+      return this.selectionStart != null;
     }
 
     private initializeTextArea(): void {
@@ -68,7 +73,7 @@
     }
 
     public handleResize() {
-      this.refreshCursorView(true);
+      this.redrawCaretAndSelection();
     }
 
     /**
@@ -78,8 +83,7 @@
       this.cursorLocation = this.documentModel.insertText(this.cursorLocation, text);
 
       this.setSelectionMode(false);
-      this.refreshCursorView(false);
-      this.markTyping();
+      this.markCursorMovedWithoutState();
     }
 
     /**
@@ -101,23 +105,39 @@
     }
 
     /**
-     * Refresh the current cursor location
+     * Redraw the caret and current selection
      */
-    private refreshCursorView(shouldMaintainPreferredPosition: boolean) {
-
+    private redrawCaretAndSelection() {
       this.caretPresenter.updateCaretLocation(this.cursorLocation);
 
-      if (!shouldMaintainPreferredPosition) {
-        this.movementState = null;
-      }
-
-      if (this.selectionStart != null) {
+      if (this.hasSelection) {
         this.selectionPresenter.update(this.selectionStart, this.cursorLocation);
       } else {
         this.selectionPresenter.disable();
       }
+    }
 
-      this.focus();
+    /**
+     * Reset the movement state, redraw the caret and selection, and mark that we've been
+     * typing. Used as a convenience method to cut down on repetitive code.  Usually invoked
+     * from method that move the caret in a way that should cause the movement state to
+     * reset (for instance left or right arrow keys).
+     */
+    private markCursorMovedWithoutState() {
+      this.movementState = null;
+      this.redrawCaretAndSelection();
+      this.markTyping();
+    }
+
+    /**
+     * Redraw the caret and selection, and mark that we've been typing. Used as a convenience
+     * method to cut down on repetitive code.  Usually invoked from method that move the
+     * caret in a way that should NOT cause the movement state to reset (for instance up or down
+     * keys).
+     */
+    private markCursorMovedWithState() {
+      this.redrawCaretAndSelection();
+      this.markTyping();
     }
 
     /* @inherit from IInputHandler */
@@ -125,14 +145,7 @@
       this.inputTextArea.focus();
 
       this.setSelectionMode(shouldExtendSelection);
-
-      var position = this.documentModel.getCursorFromLocation(x, y);
-
-      if (position != null) {
-        this.cursorLocation = position;
-        this.refreshCursorView(false);
-        this.markTyping();
-      }
+      this.moveCaretTo(x, y);
     }
 
     /* @inherit from IInputHandler */
@@ -140,13 +153,16 @@
       this.inputTextArea.focus();
 
       this.setSelectionMode(true);
+      this.moveCaretTo(x, y);
+    }
 
+    /** Move the caret to the designated point, if possible */
+    private moveCaretTo(x: number, y: number) {
       var position = this.documentModel.getCursorFromLocation(x, y);
 
       if (position != null) {
         this.cursorLocation = position;
-        this.refreshCursorView(false);
-        this.markTyping();
+        this.markCursorMovedWithoutState();
       }
     }
 
@@ -159,9 +175,7 @@
       }
 
       this.cursorLocation.moveUpwards(this.movementState);
-
-      this.refreshCursorView(true);
-      this.markTyping();
+      this.markCursorMovedWithState();
     }
 
     /* @inherit from IInputHandler */
@@ -173,9 +187,7 @@
       }
 
       this.cursorLocation.moveDownwards(this.movementState);
-
-      this.refreshCursorView(true);
-      this.markTyping();
+      this.markCursorMovedWithState();
     }
 
     /* @inherit from IInputHandler */
@@ -183,9 +195,7 @@
       this.setSelectionMode(shouldExtendSelection);
 
       this.cursorLocation.moveBackwards();
-
-      this.refreshCursorView(false);
-      this.markTyping();
+      this.markCursorMovedWithoutState();
     }
 
     /* @inherit from IInputHandler */
@@ -193,9 +203,7 @@
       this.setSelectionMode(shouldExtendSelection);
 
       this.cursorLocation.moveForward();
-
-      this.refreshCursorView(false);
-      this.markTyping();
+      this.markCursorMovedWithoutState();
     }
 
     /* @inherit from IInputHandler */
@@ -233,8 +241,7 @@
         } while (lastCategory === category);
       }
 
-      this.refreshCursorView(false);
-      this.markTyping();
+      this.markCursorMovedWithoutState();
     }
 
     /* @inherit from IInputHandler */
@@ -268,8 +275,7 @@
         } while (lastCategory === category || category < 0);
       }
 
-      this.refreshCursorView(false);
-      this.markTyping();
+      this.markCursorMovedWithoutState();
     }
 
     /* @inherit from IInputHandler */
@@ -284,8 +290,7 @@
         }
       }
 
-      this.refreshCursorView(false);
-      this.markTyping();
+      this.markCursorMovedWithoutState();
     }
 
     /* @inherit from IInputHandler */
@@ -296,31 +301,27 @@
         this.cursorLocation.moveToBeginningOf(this.cursorLocation.block.nextBlock);
       }
 
-      this.refreshCursorView(false);
-      this.markTyping();
+      this.markCursorMovedWithoutState();
     }
 
     /* @inherit from IInputHandler */
     public handleEnd(shouldExtendSelection: boolean) {
       this.setSelectionMode(shouldExtendSelection);
 
-      this.cursorLocation.moveToEndOfLine();
-
       this.movementState = CursorNavigationState.endOfLine;
 
-      this.refreshCursorView(true);
-      this.markTyping();
+      this.cursorLocation.moveToEndOfLine();
+      this.markCursorMovedWithState();
     }
 
     /* @inherit from IInputHandler */
     public handleHome(shouldExtendSelection: boolean) {
       this.setSelectionMode(shouldExtendSelection);
 
-      this.cursorLocation.moveToBeginningOfLine();
-
       this.movementState = CursorNavigationState.beginningOfLine;
 
-      this.markTyping();
+      this.cursorLocation.moveToBeginningOfLine();
+      this.markCursorMovedWithState();
     }
 
     /* @inherit from IInputHandler */
@@ -343,8 +344,7 @@
         this.cursorLocation.removeNextInBlock();
       }
 
-      this.refreshCursorView(false);
-      this.markTyping();
+      this.markCursorMovedWithoutState();
     }
 
     /* @inherit from IInputHandler */
@@ -366,8 +366,7 @@
         //this.position.block.element.removeChild(this.position.nextElement);
       }
 
-      this.refreshCursorView(false);
-      this.markTyping();
+      this.markCursorMovedWithoutState();
     }
 
     /* @inherit from IInputHandler */ 
@@ -378,8 +377,7 @@
       EditDocument.splitBlock(this.cursorLocation);
       this.cursorLocation.moveForward();
 
-      this.refreshCursorView(false);
-      this.markTyping();
+      this.markCursorMovedWithoutState();
     }
   }
 }
