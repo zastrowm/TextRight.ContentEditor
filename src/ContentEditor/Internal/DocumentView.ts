@@ -48,12 +48,10 @@
       this.markTyping();
       this.refreshCursorView(false);
 
-      element.addEventListener('mousedown', evt => this.handleMouseDown(evt));
-
       element.addEventListener('resize', () => this.handleResize());
       window.addEventListener('resize', () => this.handleResize());
 
-      var inputProcessor = new TextInputProcessor(this.inputTextArea, this);
+      var inputProcessor = new TextRight.Editor.Internal.DocumentInputProcessor(this.element, this.inputTextArea, this);
       setInterval(() => inputProcessor.readInput(), 50);
     }
 
@@ -86,23 +84,6 @@
 
     public handleResize() {
       this.refreshCursorView(true);
-    }
-
-    public handleMouseDown(evt: MouseEvent) {
-      evt.preventDefault();
-
-      this.inputTextArea.focus();
-
-      var position = this.documentModel.getCursorFromLocation(evt.clientX,evt.clientY);
-
-      if (position != null) {
-        this.setSelectionMode(false);
-        this.cursorLocation = position;
-        this.refreshCursorView(false);
-        this.markTyping();
-      }
-
-      // TODO figure out where we clicked
     }
 
     /**
@@ -165,6 +146,36 @@
       }
 
       this.focus();
+    }
+
+    /* @inherit from IInputHandler */
+    public handleLeftMouseDown(x: number, y: number, shouldExtendSelection: boolean) {
+      this.inputTextArea.focus();
+
+      this.setSelectionMode(shouldExtendSelection);
+
+      var position = this.documentModel.getCursorFromLocation(x, y);
+
+      if (position != null) {
+        this.cursorLocation = position;
+        this.refreshCursorView(false);
+        this.markTyping();
+      }
+    }
+
+    /* @inherit from IInputHandler */
+    public handleLeftMouseMove(x: number, y: number) {
+      this.inputTextArea.focus();
+
+      this.setSelectionMode(true);
+
+      var position = this.documentModel.getCursorFromLocation(x, y);
+
+      if (position != null) {
+        this.cursorLocation = position;
+        this.refreshCursorView(false);
+        this.markTyping();
+      }
     }
 
     /* @inherit from IInputHandler */

@@ -1,5 +1,4 @@
 ﻿module TextRight.Editor {
-  import TextInputProcessor = Internal.TextInputProcessor;
 
   function main() {
     var output = <any>document.querySelector("#document");

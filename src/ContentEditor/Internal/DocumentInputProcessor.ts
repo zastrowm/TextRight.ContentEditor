@@ -15,6 +15,9 @@
     navigateWordLeft(shouldExtendSelection: boolean);
     navigateWordRight(shouldExtendSelection: boolean);
 
+    handleLeftMouseDown(x: number, y: number, shouldExtendSelection: boolean);
+    handleLeftMouseMove(x: number, y: number);
+
     /** Text manipulation methods */
     handleTextAddition(text: string);
     handleBackspace();
@@ -22,18 +25,31 @@
     handleEnter();
   }
 
-  export class TextInputProcessor {
-    /**
-   * The input the last time we queried the element.
+  /**
+   * Processes key and mouse events, forwarding various events to the provided
+   * handler
    */
+  export class DocumentInputProcessor {
+    /**
+     * The input the last time we queried the element.
+     */
     private lastInput = "";
 
     private isPasteIncoming = false;
     private isCutIncoming = false;
+    private isMouseDown = false;
 
-    constructor(private element: HTMLTextAreaElement, private handler: IInputHandler) {
+    constructor(
+      private documentElement,
+      private element: HTMLTextAreaElement,
+      private handler: IInputHandler) {
+
       if (element == null)
         throw "Not a valid element";
+
+      documentElement.addEventListener("mousedown", evt => this.handleMouseDown(evt));
+      documentElement.addEventListener("mousemove", evt => this.handleMouseMove(evt));
+      documentElement.addEventListener("mouseup", evt => this.handleMouseUp(evt));
 
       element.addEventListener("keydown", evt => this.handleKeyDown(evt));
     }
@@ -46,7 +62,7 @@
       var prevInput = this.lastInput;
 
       // If nothing changed, bail.
-      if (text === prevInput && !this.isSomethingSelected())
+      if (text === prevInput)
         return false;
 
       // ::::::::CODEMIRROR::::::::
@@ -85,17 +101,36 @@
       return true;
     }
 
-    public isSomethingSelected(): boolean {
-      return false;
+    private handleMouseDown(evt: MouseEvent) {
+      if (evt.button !== 0)
+        return;
+
+      evt.preventDefault();
+      this.isMouseDown = true;
+      var shouldExtendSelections = evt.shiftKey;
+
+      this.handler.handleLeftMouseDown(evt.clientX, evt.clientY, shouldExtendSelections);
     }
 
-    private isShiftDown(evt: KeyboardEvent): boolean {
-      return evt.shiftKey;
+    private handleMouseMove(evt: MouseEvent) {
+      if (!this.isMouseDown)
+        return;
+      if (evt.button !== 0)
+        return;
+
+      evt.preventDefault();
+
+      this.handler.handleLeftMouseMove(evt.clientX, evt.clientY);
     }
 
-    /** Check if the control key is down for the gi*/
-    private isControlDown(evt: KeyboardEvent): boolean {
-      return evt.ctrlKey;
+    private handleMouseUp(evt: MouseEvent) {
+      if (!this.isMouseDown)
+        return;
+      if (evt.button !== 0)
+        return;
+
+      this.isMouseDown = false;
+      evt.preventDefault();
     }
 
     /** Handle the case where the user pressed a key down. */

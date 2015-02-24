@@ -44,7 +44,7 @@
     <TypeScriptCompile Include="Internal\ElementClasses.ts" />
     <TypeScriptCompile Include="Internal\PointPosition.ts" />
     <TypeScriptCompile Include="Internal\SelectionPresenter.ts" />
-    <TypeScriptCompile Include="Internal\TextInputProcessor.ts" />
+    <TypeScriptCompile Include="Internal\DocumentInputProcessor.ts" />
     <TypeScriptCompile Include="TextRight.ts" />
     <TypeScriptCompile Include="Utils.ts" />
   </ItemGroup>
