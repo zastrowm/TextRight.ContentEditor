@@ -52,6 +52,8 @@
       documentElement.addEventListener("mouseup", evt => this.handleMouseUp(evt));
 
       element.addEventListener("keydown", evt => this.handleKeyDown(evt));
+
+      setInterval(() => this.readInput(), 50);
     }
 
     public readInput(): boolean {

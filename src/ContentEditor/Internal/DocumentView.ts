@@ -1,16 +1,13 @@
 ﻿module TextRight.Editor.Internal {
   import DebouncingTimer = TextRight.Utils.DebouncingTimer;
   import CharacterCategorizer = TextRight.Internal.CharacterCategorizer
+  import HtmlUtils = TextRight.Utils.HtmlUtils;
 
   /**
    * Wraps an element and allows editing, providing a cursor and handling
    * operations that modify the text within the element.
    */
   export class DocumentView implements IInputHandler {
-    private cursorElement: HTMLElement;
-
-    private blinkTimer: DebouncingTimer;
-
     private inputTextArea: HTMLTextAreaElement;
 
     private characterCategorizer: CharacterCategorizer;
@@ -20,14 +17,17 @@
     /** The state to use when moving up or down */
     private movementState: CursorNavigationState = null;
 
-    /** Handles the presentation of the selection */
-    private selectionPresenter: SelectionPresenter;
-
     /** Where the current selection starts. */
     private selectionStart: DocumentCursor;
 
     /** Where the current selection ends.  Also used as the insertion point when we don't have a selection. */
     private cursorLocation: DocumentCursor;
+
+    /** Handles the display of the current selection */
+    private selectionPresenter: SelectionPresenter;
+
+    /** Handles the display of the caret (including its blinking) */
+    private caretPresenter: CaretPresenter;
 
     /**
      * Create a new DocumentView that handles the given div as an editable document
@@ -40,10 +40,9 @@
       this.selectionStart = this.documentModel.firstBlock.beginning;
 
       this.initializeTextArea();
-      this.initializeCursor();
 
+      this.caretPresenter = new CaretPresenter(element, this.inputTextArea);
       this.selectionPresenter = new TextRight.Editor.Internal.SelectionPresenter(element);
-      this.blinkTimer = new DebouncingTimer(500, () => this.toggleCursor());
 
       this.markTyping();
       this.refreshCursorView(false);
@@ -51,14 +50,7 @@
       element.addEventListener('resize', () => this.handleResize());
       window.addEventListener('resize', () => this.handleResize());
 
-      var inputProcessor = new TextRight.Editor.Internal.DocumentInputProcessor(this.element, this.inputTextArea, this);
-      setInterval(() => inputProcessor.readInput(), 50);
-    }
-
-    private initializeCursor(): void {
-      this.cursorElement = document.createElement("div");
-      this.cursorElement.classList.add(ElementClasses.cursor);
-      this.element.appendChild(this.cursorElement);
+      var inputProcessor = new DocumentInputProcessor(this.element, this.inputTextArea, this);
     }
 
     private initializeTextArea(): void {
@@ -68,14 +60,7 @@
     }
 
     private markTyping() {
-      this.cursorElement.style.display = "block";
-      this.blinkTimer.trigger();
-    }
-
-    private toggleCursor() {
-      var isHidden = this.cursorElement.style.display === "none";
-      this.cursorElement.style.display = isHidden ? "block" : "none";
-      this.blinkTimer.trigger();
+      this.caretPresenter.markTextActivity();
     }
 
     public focus(): void {
@@ -119,21 +104,8 @@
      * Refresh the current cursor location
      */
     private refreshCursorView(shouldMaintainPreferredPosition: boolean) {
-      // TODO split out the handling of shouldMaintainPreferredPosition and 
-      // the actual refresh of the cursor location 
-      var pos = this.cursorLocation.getCursorPosition();
 
-      var cssTop = pos.top + "px";
-      var cssLeft = pos.left + "px";
-      var height = pos.height + "px";
-
-      this.cursorElement.style.top = cssTop;
-      this.cursorElement.style.left = cssLeft;
-      this.cursorElement.style.height = height;
-
-      this.inputTextArea.style.top = cssTop;
-      this.inputTextArea.style.left = cssLeft;
-      this.inputTextArea.style.height = height;
+      this.caretPresenter.updateCaretLocation(this.cursorLocation);
 
       if (!shouldMaintainPreferredPosition) {
         this.movementState = null;

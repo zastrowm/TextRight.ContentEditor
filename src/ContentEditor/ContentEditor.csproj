@@ -35,6 +35,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="Extensions.ts" />
     <TypeScriptCompile Include="Internal\BlockItem.ts" />
+    <TypeScriptCompile Include="Internal\CaretPresenter.ts" />
     <TypeScriptCompile Include="Internal\CharacterCategorizer.ts" />
     <TypeScriptCompile Include="Internal\CursorNavigationState.ts" />
     <TypeScriptCompile Include="Internal\DocumentCursor.ts" />
