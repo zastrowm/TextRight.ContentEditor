@@ -22,6 +22,7 @@
 
     /** Indicate that there is textual activity and so the caret should be solid. */
     public markTextActivity() {
+      this.cursorElement.style.display = "block";
       this.blinkTimer.trigger();
     }
 
