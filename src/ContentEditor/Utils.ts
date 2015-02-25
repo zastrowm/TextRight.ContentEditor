@@ -135,6 +135,7 @@
       range.selectNode(node);
       var rect = range.getBoundingClientRect();
       range.detach();
+
       return rect;
     }
 
@@ -144,6 +145,24 @@
     public static removeElement(element: HTMLElement) {
       element.parentElement.removeChild(element);
     }
+
+    /**
+     * Set the top/left/height/width of an element, first applying a top/left offset
+     */
+    public static positionElementWithOffset(
+      element: HTMLElement,
+      offset: {top: number; left: number},
+      top: number,
+      left: number,
+      height: number,
+      width: number) {
+
+      element.style.top = (top + offset.top) + "px";
+      element.style.left = (left + offset.left) + "px";
+      element.style.height = (height) + "px";
+      element.style.width = (width) + "px";
+    }
+
   }
 
   export class DebouncingTimer {

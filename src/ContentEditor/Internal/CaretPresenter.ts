@@ -11,11 +11,11 @@
     private blinkTimer: DebouncingTimer;
 
     /**
-     * @param documentElement the document for which the caret is being managed
+     * @param documentModel the model for which the caret is being managed
      * @param inputTextArea the input area that should move along with the caret
      */
-    constructor(documentElement: HTMLElement, private inputTextArea: HTMLTextAreaElement) {
-      this.cursorElement = HtmlUtils.appendNewElement(documentElement, "DIV", ElementClasses.cursor);
+    constructor(private documentModel: DocumentModel,private inputTextArea: HTMLTextAreaElement) {
+      this.cursorElement = HtmlUtils.appendNewElement(documentModel.rawElement, "DIV", ElementClasses.cursor);
 
       this.blinkTimer = new DebouncingTimer(500, () => this.toggleCursor());
     }
@@ -30,21 +30,12 @@
      * Update the position of the caret
      */
     public updateCaretLocation(cursor: DocumentCursor) {
-      // TODO split out the handling of shouldMaintainPreferredPosition and 
-      // the actual refresh of the cursor location 
+      
       var pos = cursor.getCursorPosition();
+      var offset = this.documentModel.getOffset();
 
-      var cssTop = pos.top + "px";
-      var cssLeft = pos.left + "px";
-      var height = pos.height + "px";
-
-      this.cursorElement.style.top = cssTop;
-      this.cursorElement.style.left = cssLeft;
-      this.cursorElement.style.height = height;
-
-      this.inputTextArea.style.top = cssTop;
-      this.inputTextArea.style.left = cssLeft;
-      this.inputTextArea.style.height = height;
+      HtmlUtils.positionElementWithOffset(this.cursorElement, offset, pos.top, pos.left, pos.height, 1);
+      HtmlUtils.positionElementWithOffset(this.inputTextArea, offset, pos.top, pos.left, pos.height, 1);
     }
 
     /**

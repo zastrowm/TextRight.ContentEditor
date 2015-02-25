@@ -41,8 +41,8 @@
 
       this.initializeTextArea();
 
-      this.caretPresenter = new CaretPresenter(element, this.inputTextArea);
-      this.selectionPresenter = new TextRight.Editor.Internal.SelectionPresenter(element);
+      this.caretPresenter = new CaretPresenter(this.documentModel, this.inputTextArea);
+      this.selectionPresenter = new TextRight.Editor.Internal.SelectionPresenter(this.documentModel);
 
       this.markTyping();
       this.redrawCaretAndSelection();

@@ -38,6 +38,26 @@
     }
 
     /**
+     * Get the offset between getBoundingClientRect() and the top of the element.  This is
+     * used primarily for anything that calls getBoundingClientRect() and needs to position
+     * things accordingly. getBoundingClientRect() returns client coordinates while
+     * absolutely positioned items need page offset.  So by adding the offset acquired by
+     * this method, you can translate your client rect to a page rect.
+     * @return The offset between client coordinates and page coordinates.
+     */
+    public getOffset(): { left: number; top: number } {
+      var doc = this.element;
+      var client = doc.getBoundingClientRect();
+      var diffTop = doc.offsetTop - client.top;
+      var diffLeft = doc.offsetLeft - client.left;
+
+      return {
+        left: diffLeft,
+        top: diffTop
+      };
+    }
+
+    /**
      * The html div element that represents the top-level document container
      */
     public get rawElement(): HTMLDivElement {
