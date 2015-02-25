@@ -3,8 +3,10 @@
   import MathUtils = TextRight.Utils.MathUtils;
 
   export class DocumentModel {
-    private rawFirstBlock: BlockItem;
     private undoStack: UndoStack;
+
+    private firstBlockIndicator: HTMLElement;
+    private lastBlockIndicator: HTMLElement;
 
     /**
      * Create a new editable document from a div element
@@ -14,7 +16,24 @@
      * @return A block representing the beginning of the document.
      */
     constructor(private element: HTMLDivElement) {
-      this.rawFirstBlock = EditDocument.intialize(element);
+
+      // we're gonna put the text back later
+      var text = element.textContent;
+
+      // make sure the element is empty
+      HtmlUtils.clearChildren(element);
+
+      this.firstBlockIndicator = HtmlUtils.appendNewElement(element, "div", ElementClasses.firstBlock);
+      this.lastBlockIndicator = HtmlUtils.appendNewElement(element, "div", ElementClasses.lastBlock);
+
+      // fake block to insert the first block
+      var first = new BlockItem(<HTMLDivElement>element.children[0]);
+
+      var block = BlockItem.createNewBlock();
+
+      EditDocument.insertBlockAfter(first, block);
+      EditDocument.insertText(block.beginning, text);
+
       this.undoStack = new UndoStack();
     }
 
@@ -28,8 +47,15 @@
     /**
      * The first block item in the document
      */
-    public get firstBlock() {
-      return this.rawFirstBlock;
+    public get firstBlock(): BlockItem {
+      return new BlockItem(this.firstBlockIndicator.nextElementSibling);
+    }
+
+    /**
+     * The last block item in the document
+     */
+    public get lastBlock(): BlockItem {
+      return new BlockItem(this.lastBlockIndicator.previousElementSibling);
     }
 
     /**
@@ -54,7 +80,6 @@
       x = MathUtils.clamp(x, rect.left, rect.right);
       y = MathUtils.clamp(y, rect.top, rect.bottom);
 
-
       var element = document.elementFromPoint(x, y);
 
       if (EditDocument.isSpan(element)) {
@@ -74,21 +99,40 @@
           : <Element>element.parentNode;
 
         var block = new BlockItem(<HTMLElement>blockElement);
-        var contentRect = block.containerElement.getBoundingClientRect();
-
-        x = MathUtils.clamp(x, contentRect.left, contentRect.right);
-        y = MathUtils.clamp(y, contentRect.top, contentRect.bottom);
-
-        // TODO optimize so that we don't go through EVERY span and so that
-        // if we're towards the end, we start from the beginning
-        var cursor = block.beginning;
-        cursor.moveTowardsPosition(x, y);
-        return cursor;
+        return this.getCursorForPositionForBlock(x, y, block);
       } else {
-        // TODO
+
+        var firstBlock = this.firstBlock;
+
+        var beginPosition = this.firstBlock.containerElement.getBoundingClientRect().top;
+        var endPosition = this.lastBlock.containerElement.getBoundingClientRect().bottom;
+
+        if (y < beginPosition) {
+          return this.getCursorForPositionForBlock(x, y, this.firstBlock);
+        } else if (y >= endPosition) {
+          return this.getCursorForPositionForBlock(x, y, this.lastBlock);
+        } else {
+          console.error("{A91266BD-CFD1-4C8F-AE57-76FBBD9613F6}", element, x, y);
+        }
       }
 
       return null;
+    }
+
+    /**
+     * Get a cursor that represents a location close to the given x/y value within the block
+     */
+    private getCursorForPositionForBlock(x: number, y: number, block: BlockItem) {
+      var contentRect = block.containerElement.getBoundingClientRect();
+
+      x = MathUtils.clamp(x, contentRect.left, contentRect.right);
+      y = MathUtils.clamp(y, contentRect.top, contentRect.bottom);
+
+      // TODO optimize so that we don't go through EVERY span and so that
+      // if we're towards the end, we start from the beginning
+      var cursor = block.beginning;
+      cursor.moveTowardsPosition(x, y);
+      return cursor;
     }
 
     /**

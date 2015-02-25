@@ -8,34 +8,7 @@ module TextRight.Editor.Internal {
    * using blocks and cursors.
    */
   export class EditDocument {
-    /**
-     * Create a new editable document from a div element
-     * @note all children of the element will be removed/replace to make
-     * an editable document.
-     * @param {HTMLDivElement} element The element to make a document out of.
-     * @return A block representing the beginning of the document.
-     */
-    public static intialize(element: HTMLDivElement): BlockItem {
-      // we're gonna put the text back later
-      var text = element.textContent;
-
-      // make sure the element is empty
-      TextRight.Utils.HtmlUtils.clearChildren(element);
-
-      TextRight.Utils.HtmlUtils.appendNewElement(element, "div", ElementClasses.firstBlock);
-      TextRight.Utils.HtmlUtils.appendNewElement(element, "div", ElementClasses.lastBlock);
-
-      // fake block to insert the first block
-      var first = new BlockItem(<HTMLDivElement>element.children[0]);
-
-      var block = BlockItem.createNewBlock();
-      
-      EditDocument.insertBlockAfter(first, block);
-      EditDocument.insertText(block.beginning, text);
-
-      return block;
-    }
-
+    
     /**
      * Check if the given element represents a block
      */
