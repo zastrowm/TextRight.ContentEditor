@@ -47,7 +47,8 @@
       // if the second point has its top between the top of the first
       // point and the first points bottom, the second point is considered
       // inline with the other
-      return second.top < first.top + first.height;
+      // WASBUG: there should be an overlap of at least 1 or 2 pixels, thus the 2 offset
+      return second.top < (first.top + first.height - 2);
     }
 
     /**
