@@ -80,21 +80,33 @@
         // the middle which stretches from the start line to the end line, and the bottom which is the line
         // where the selection ends
 
-        this.elementTop.style.top = startPosition.top + 'px';
+        // WASBUG make everything integers to prevent floating point errors in the display
+        // TODO could we round to nearest something else instead (like 0.5)?
+        var topTop = (startPosition.top) | 0;
+        var topHeight = (startPosition.height) | 0;
+
+        var midTop = (topTop + topHeight) | 0;
+        var midHeight = (heightOfMiddle) | 0;
+
+        var botTop = (midTop + midHeight) | 0;
+        // get rid of any cumulative rounding errors by adding in the error found thus far
+        var botHeight = (endPosition.top - botTop + endPosition.height ) | 0;
+
+        this.elementTop.style.top = topTop + 'px';
         this.elementTop.style.left = startPosition.left + 'px';
-        this.elementTop.style.height = startPosition.height + 'px';
+        this.elementTop.style.height = topHeight + 'px';
         this.elementTop.style.width = (rightMost - startPosition.left) + 'px';
         this.elementTop.style.display = "block";
 
-        this.elementMid.style.top = (startPosition.top + startPosition.height) + 'px';
+        this.elementMid.style.top = midTop + 'px';
         this.elementMid.style.left = leftMost + 'px';
-        this.elementMid.style.height = heightOfMiddle + 'px';
+        this.elementMid.style.height = midHeight + 'px';
         this.elementMid.style.width = (rightMost - leftMost) + 'px';
         this.elementMid.style.display = "block";
 
-        this.elementBot.style.top = endPosition.top + 'px';
+        this.elementBot.style.top = botTop + 'px';
         this.elementBot.style.left = leftMost + 'px';
-        this.elementBot.style.height = endPosition.height + 'px';
+        this.elementBot.style.height = botHeight + 'px';
         this.elementBot.style.width = (endPosition.left - leftMost) + 'px';
         this.elementBot.style.display = "block";
       }
