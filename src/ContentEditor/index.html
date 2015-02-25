@@ -19,56 +19,69 @@
   <script src="Internal/DocumentView.js"></script>
   <script src="TextRight.js"></script>
   <style>
-    .heading {
-      font-size: 2em;
-    }
-
-    .paragraph {
-      font-size: 1.1em;
-      color: blue;
-    }
-
-    .block {
-    }
-
-    #output #document span {
-      /* border: 1px solid #eee;*/
+    
+    body {
+      background-color: #f4f4f4;
+      padding: 1em;
     }
 
     #document {
-      border: 1px solid green;
-      background-color: #eee;
+      font-family: Calibri;
+      font-size: 14px;
+      box-sizing: border-box;
+      padding-top: 1in;
       cursor: text;
+      width: 8.5in;
+      margin: 0 auto;
+      border: 1px solid #9e9e9e;
+      background-color: white;
+      height: 11.5in;
     }
 
-      #document block {
-        padding-bottom: .5em;
-        padding-top: .5em;
-        border: 1px solid rgba(0,0,0,.1);
-        display: block;
-      }
+    #document.debug {
+      border: 1px solid green;
+      background-color: #eee;
+    }
 
-      #document block p {
-        margin: 0px;
-        white-space: pre-wrap;
-        max-width: 400px;
-        border: 1px solid rgba(0,0,0,.1);
-      }
+    #document block {
+      padding-bottom: .5em;
+      padding-top: .5em;
+      display: block;
+    }
 
-      #document span {
-        border: 1px solid rgba(128,0,0,.1);
-      }
+    #document.debug block {
+      border: 1px solid rgba(0,0,0,.1);
+    }
 
-    .__tr__-cursor {
+    #document block p {
+      margin: 0px;
+      white-space: pre-wrap;
+      max-width: 6.5in;
+      margin: 0 auto;
+    }
+
+    #document.debug block p {
+      border: 1px solid rgba(0,0,0,.1);
+    }
+
+    #document.debug span {
+      border: 1px solid rgba(128,0,0,.1);
+    }
+
+    #document .__tr__-cursor {
       border-left: 1px solid black;
       position: absolute;
       width: 1px;
     }
 
-    .__tr__-textareaInput {
-      opacity: .1;
+    #document .__tr__-textareaInput {
+      opacity: 0;
       position: absolute;
       height: 1px !important;
+    }
+
+    #document.debug .__tr__-textareaInput {
+      opacity: 0.1;
     }
 
     #document .__tr__-selectionTop,  #document .__tr__-selectionMiddle, #document .__tr__-selectionBottom{
