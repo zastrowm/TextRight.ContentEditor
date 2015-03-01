@@ -121,6 +121,8 @@
       return contents;
     }
 
+    private static cachedRange = document.createRange();
+
     /**
      * Get the position of a single node
      */
@@ -131,10 +133,9 @@
         return element.getBoundingClientRect();
       }
 
-      var range = document.createRange();
+      var range = HtmlUtils.cachedRange;
       range.selectNode(node);
       var rect = range.getBoundingClientRect();
-      range.detach();
 
       return rect;
     }
