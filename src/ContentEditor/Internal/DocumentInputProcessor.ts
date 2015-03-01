@@ -1,5 +1,7 @@
 ﻿module TextRight.Editor.Internal {
   import StringUtils = TextRight.Utils.StringUtils;
+  import EventHandlers = TextRight.Internal.EventHandlers;
+  import IEventHandler = TextRight.Internal.IEventHandler;
 
   export interface IInputHandler {
 
@@ -15,10 +17,19 @@
     navigateWordLeft(shouldExtendSelection: boolean);
     navigateWordRight(shouldExtendSelection: boolean);
 
-    handleLeftMouseDown(x: number, y: number, shouldExtendSelection: boolean);
-    handleLeftMouseMove(x: number, y: number);
+    /* Selection manipulation methods */
 
-    /** Text manipulation methods */
+    /**
+     * Sets the current location of the caret.
+     * @param {number} x The x screen-coordinate of where the caret should be placed.
+     * @param {number} y The y screen-coordinate of where the caret should be placed.
+     * @param {boolean} shouldExtendSelection true if current text selection should continue
+     *                                        to the current location, false if it should
+     *                                        simply be moved to the designated location.
+     */
+    setCaret(x: number, y: number, shouldExtendSelection: boolean): void;
+
+    /* Text manipulation methods */
     handleTextAddition(text: string);
     handleBackspace();
     handleDelete();
@@ -37,7 +48,10 @@
 
     private isPasteIncoming = false;
     private isCutIncoming = false;
-    private isMouseDown = false;
+
+    private mouseDown: IEventHandler;
+    private mouseMove: IEventHandler;
+    private mouseUp: IEventHandler;
 
     constructor(
       private documentElement,
@@ -47,13 +61,25 @@
       if (element == null)
         throw "Not a valid element";
 
-      documentElement.addEventListener("mousedown", evt => this.handleMouseDown(evt));
-      documentElement.addEventListener("mousemove", evt => this.handleMouseMove(evt));
-      documentElement.addEventListener("mouseup", evt => this.handleMouseUp(evt));
-      window.addEventListener("mouseup", evt => this.handleMouseUp(evt));
+      this.mouseDown = EventHandlers.from(
+        documentElement,
+        "mousedown",
+        evt => this.handleMouseDown(evt));
+      this.mouseDown.enable();
 
-      element.addEventListener("keydown", evt => this.handleKeyDown(evt));
+      this.mouseMove = EventHandlers.from(
+        documentElement,
+        "mousemove",
+        evt => this.handleMouseMove(evt));
 
+      this.mouseUp = EventHandlers.fromMany(
+        [documentElement, window],
+        "mouseup",
+        evt => this.handleMouseUp(evt));
+
+      EventHandlers.from(element, "keydown", evt => this.handleKeyDown(evt));
+
+      // TODO reduce interval when we can (exponential back off?)
       setInterval(() => this.readInput(), 50);
     }
 
@@ -104,36 +130,39 @@
       return true;
     }
 
+    /* Handle the case where the user is selecting text */
     private handleMouseDown(evt: MouseEvent) {
       if (evt.button !== 0)
         return;
 
       evt.preventDefault();
-      this.isMouseDown = true;
       var shouldExtendSelections = evt.shiftKey;
 
-      this.handler.handleLeftMouseDown(evt.clientX, evt.clientY, shouldExtendSelections);
+      this.handler.setCaret(evt.clientX, evt.clientY, shouldExtendSelections);
+
+      this.mouseMove.enable();
+      this.mouseUp.enable();
     }
 
+    /* Handle the case where the user is selecting text */
     private handleMouseMove(evt: MouseEvent) {
-      if (!this.isMouseDown)
-        return;
       if (evt.button !== 0)
         return;
 
       evt.preventDefault();
 
-      this.handler.handleLeftMouseMove(evt.clientX, evt.clientY);
+      this.handler.setCaret(evt.clientX, evt.clientY, true);
     }
 
+    /* Handle the case where the user stopped the selection */
     private handleMouseUp(evt: MouseEvent) {
-      if (!this.isMouseDown)
-        return;
       if (evt.button !== 0)
         return;
 
-      this.isMouseDown = false;
       evt.preventDefault();
+
+      this.mouseMove.disable();
+      this.mouseUp.disable();
     }
 
     /** Handle the case where the user pressed a key down. */

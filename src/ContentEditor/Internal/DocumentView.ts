@@ -141,23 +141,12 @@
     }
 
     /* @inherit from IInputHandler */
-    public handleLeftMouseDown(x: number, y: number, shouldExtendSelection: boolean) {
+    public setCaret(x: number, y: number, shouldExtendSelection: boolean) {
       this.inputTextArea.focus();
 
       this.setSelectionMode(shouldExtendSelection);
-      this.moveCaretTo(x, y);
-    }
 
-    /* @inherit from IInputHandler */
-    public handleLeftMouseMove(x: number, y: number) {
-      this.inputTextArea.focus();
-
-      this.setSelectionMode(true);
-      this.moveCaretTo(x, y);
-    }
-
-    /** Move the caret to the designated point, if possible */
-    private moveCaretTo(x: number, y: number) {
+      // move to the designated location
       var position = this.documentModel.getCursorFromLocation(x, y);
 
       if (position != null) {
