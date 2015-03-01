@@ -177,33 +177,7 @@ module TextRight.Editor.Internal {
       return cursor;
     }
 
-    /**
-     * Merge the contents of two blocks.
-     * @param {BlockItem} mergeInto The block to merge the blockToMerge into.
-     * @param {BlockItem} blockToMerge The block to merge into mergeInto.
-     * @return A DocumentCursor pointing to what used to be the beginning of mergeInto block.
-     */
-    public static mergeBlocks(mergeInto: BlockItem, blockToMerge: BlockItem): DocumentCursor {
-      if (blockToMerge.isEmpty) {
-        // we're merging in an empty block, so just remove the block
-        EditDocument.removeBlock(blockToMerge);
-        return mergeInto.end;
-      }
-
-      var wasMergeIntoBlockEmpty = mergeInto.isEmpty;
-      var oldContent = EditDocument.removeBlock(blockToMerge);
-
-      if (wasMergeIntoBlockEmpty) {
-        EditDocument.appendToBlock(mergeInto, oldContent);
-        return mergeInto.beginning;
-      }
-
-      var newCursor = mergeInto.end;
-      newCursor.moveBackwardInBlock();
-      EditDocument.appendToBlock(mergeInto, oldContent);
-      newCursor.moveForward();
-      return newCursor;
-    }
+  
 
     /**
      * Add the given fragment to the end of the given block
@@ -230,20 +204,6 @@ module TextRight.Editor.Internal {
         // the element is now empty so we remove it
         nextSpan.parentElement.removeChild(nextSpan);
       }
-    }
-
-    /**
-     * Removes the block from the document, returning the content (without indicators) of
-     * the block.
-     */
-    private static removeBlock(blockToRemove: BlockItem): DocumentFragment {
-      var fragment = HtmlUtils.convertToFragment(blockToRemove.contentElement);
-      fragment.removeChild(fragment.firstChild);
-      fragment.removeChild(fragment.lastChild);
-
-      HtmlUtils.removeElement(blockToRemove.containerElement);
-
-      return fragment;
     }
 
     public static blockFromSpan(element: Element): BlockItem {

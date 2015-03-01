@@ -175,7 +175,89 @@
 
       return EditDocument.insertText(cursor, text);
     }
+
+    /**
+     * Removes the content between start and end
+     * @param {DocumentCursor} start the start of the content to remove
+     * @param {DocumentCursor} end the end of the content to remove
+     * @return a location representing the resulting location of the cursor
+     */
+    public removeBetween(start: DocumentCursor, end: DocumentCursor): DocumentCursor {
+      // TODO implement
+      return null;
+    }
+
+    /**
+     * Merge the contents of two blocks.
+     * @param {BlockItem} mergeInto The block to merge the blockToMerge into.
+     * @param {BlockItem} blockToMerge The block to merge into mergeInto.
+     * @return A DocumentCursor pointing to what used to be the beginning of mergeInto block.
+     */
+    public mergeBlocks(mergeInto: BlockItem, blockToMerge: BlockItem): DocumentCursor {
+      if (blockToMerge.isEmpty) {
+        // we're merging in an empty block, so just remove the block
+        this.removeBlock(blockToMerge);
+        return mergeInto.end;
+      }
+
+      var wasMergeIntoBlockEmpty = mergeInto.isEmpty;
+      var oldContent = this.removeBlock(blockToMerge);
+
+      if (wasMergeIntoBlockEmpty) {
+        this.appendToBlock(mergeInto, oldContent);
+        return mergeInto.beginning;
+      }
+
+      var newCursor = mergeInto.end;
+      newCursor.moveBackwardInBlock();
+      this.appendToBlock(mergeInto, oldContent);
+      newCursor.moveForward();
+      return newCursor;
+    }
+
+    /**
+     * Add the given fragment to the end of the given block
+     * @param block the block to which to append content
+     * @param fragment the fragment to append
+     */
+    private appendToBlock(block: BlockItem, fragment: DocumentFragment) {
+      var lastContent = block.lastContentSpan;
+
+      // we CANNOT allow empty spans, so remove the existing empty span if it exists
+      if (block.isEmpty) {
+        block.contentElement.removeChild(block.firstContentSpan);
+      }
+
+      block.contentElement.insertBefore(fragment, block.contentElement.lastElementChild);
+
+      var nextSpan = lastContent.nextElementSibling;
+
+      // Note don't worry if we removed this element, that just means nextElementSibiling
+      // will be null.
+      if (nextSpan != null && lastContent.className === nextSpan.className) {
+        // the spans have the same "style" so combine them
+        lastContent.appendChild(HtmlUtils.convertToFragment(nextSpan));
+        // the element is now empty so we remove it
+        nextSpan.parentElement.removeChild(nextSpan);
+      }
+    }
+
+    /**
+     * Removes the block from the document, returning the content (without indicators) of
+     * the block.
+     */
+    private removeBlock(blockToRemove: BlockItem): DocumentFragment {
+      var fragment = HtmlUtils.convertToFragment(blockToRemove.contentElement);
+      fragment.removeChild(fragment.firstChild);
+      fragment.removeChild(fragment.lastChild);
+
+      HtmlUtils.removeElement(blockToRemove.containerElement);
+
+      return fragment;
+    }
   }
+
+
 
   class UndoStackNode {
     constructor(public event: UndoEvent, public previous: UndoEvent) {

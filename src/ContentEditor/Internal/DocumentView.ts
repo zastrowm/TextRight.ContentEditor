@@ -21,7 +21,7 @@
     private selectionStart: DocumentCursor;
 
     /** Where the current selection ends.  Also used as the insertion point when we don't have a selection. */
-    private cursorLocation: DocumentCursor;
+    private caretLocation: DocumentCursor;
 
     /** Handles the display of the current selection */
     private selectionPresenter: SelectionPresenter;
@@ -36,7 +36,7 @@
       this.characterCategorizer = CharacterCategorizer.instance;
 
       this.documentModel = new DocumentModel(element);
-      this.cursorLocation = this.documentModel.firstBlock.beginning;
+      this.caretLocation = this.documentModel.firstBlock.beginning;
       this.selectionStart = this.documentModel.firstBlock.beginning;
 
       this.initializeTextArea();
@@ -80,7 +80,7 @@
      * Handles the events that occur when the text input has changed.
      */
     public handleTextAddition(text: string) {
-      this.cursorLocation = this.documentModel.insertText(this.cursorLocation, text);
+      this.caretLocation = this.documentModel.insertText(this.caretLocation, text);
 
       this.setSelectionMode(false);
       this.markCursorMovedWithoutState();
@@ -96,7 +96,7 @@
 
         // selectionStart being null is the indicator that we don't have a selection
         if (this.selectionStart == null) {
-          this.selectionStart = this.cursorLocation.clone();
+          this.selectionStart = this.caretLocation.clone();
         }
 
       } else {
@@ -108,10 +108,10 @@
      * Redraw the caret and current selection
      */
     private redrawCaretAndSelection() {
-      this.caretPresenter.updateCaretLocation(this.cursorLocation);
+      this.caretPresenter.updateCaretLocation(this.caretLocation);
 
       if (this.hasSelection) {
-        this.selectionPresenter.update(this.selectionStart, this.cursorLocation);
+        this.selectionPresenter.update(this.selectionStart, this.caretLocation);
       } else {
         this.selectionPresenter.disable();
       }
@@ -150,7 +150,7 @@
       var position = this.documentModel.getCursorFromLocation(x, y);
 
       if (position != null) {
-        this.cursorLocation = position;
+        this.caretLocation = position;
         this.markCursorMovedWithoutState();
       }
     }
@@ -160,10 +160,10 @@
       this.setSelectionMode(shouldExtendSelection);
 
       if (this.movementState == null) {
-        this.movementState = CursorNavigationState.fromPosition(this.cursorLocation.getCursorPosition().left);
+        this.movementState = CursorNavigationState.fromPosition(this.caretLocation.getCursorPosition().left);
       }
 
-      this.cursorLocation.moveUpwards(this.movementState);
+      this.caretLocation.moveUpwards(this.movementState);
       this.markCursorMovedWithState();
     }
 
@@ -172,10 +172,10 @@
       this.setSelectionMode(shouldExtendSelection);
 
       if (this.movementState == null) {
-        this.movementState = CursorNavigationState.fromPosition(this.cursorLocation.getCursorPosition().left);
+        this.movementState = CursorNavigationState.fromPosition(this.caretLocation.getCursorPosition().left);
       }
 
-      this.cursorLocation.moveDownwards(this.movementState);
+      this.caretLocation.moveDownwards(this.movementState);
       this.markCursorMovedWithState();
     }
 
@@ -183,7 +183,7 @@
     public navigateLeft(shouldExtendSelection: boolean) {
       this.setSelectionMode(shouldExtendSelection);
 
-      this.cursorLocation.moveBackwards();
+      this.caretLocation.moveBackwards();
       this.markCursorMovedWithoutState();
     }
 
@@ -191,7 +191,7 @@
     public navigateRight(shouldExtendSelection: boolean) {
       this.setSelectionMode(shouldExtendSelection);
 
-      this.cursorLocation.moveForward();
+      this.caretLocation.moveForward();
       this.markCursorMovedWithoutState();
     }
 
@@ -199,12 +199,12 @@
     public navigateWordLeft(shouldExtendSelection: boolean) {
       this.setSelectionMode(shouldExtendSelection);
 
-      if (this.cursorLocation.isBeginningOfBlock) {
-        if (!this.cursorLocation.block.isBeginningOfDocument) {
-          this.cursorLocation.moveToEndOf(this.cursorLocation.block.previousBlock);
+      if (this.caretLocation.isBeginningOfBlock) {
+        if (!this.caretLocation.block.isBeginningOfDocument) {
+          this.caretLocation.moveToEndOf(this.caretLocation.block.previousBlock);
         }
       } else {
-        var cursor = this.cursorLocation;
+        var cursor = this.caretLocation;
 
         var category: number;
 
@@ -237,12 +237,12 @@
     public navigateWordRight(shouldExtendSelection: boolean) {
       this.setSelectionMode(shouldExtendSelection);
 
-      if (this.cursorLocation.isEndOfBlock) {
-        if (!this.cursorLocation.block.isEndOfDocument) {
-          this.cursorLocation.moveToBeginningOf(this.cursorLocation.block.nextBlock);
+      if (this.caretLocation.isEndOfBlock) {
+        if (!this.caretLocation.block.isEndOfDocument) {
+          this.caretLocation.moveToBeginningOf(this.caretLocation.block.nextBlock);
         }
       } else {
-        var cursor = this.cursorLocation;
+        var cursor = this.caretLocation;
 
         var lastCategory: number;
         var category: number;
@@ -271,11 +271,11 @@
     public navigateBlockUp(shouldExtendSelection: boolean) {
       this.setSelectionMode(shouldExtendSelection);
 
-      if (!this.cursorLocation.isBeginningOfBlock) {
-        this.cursorLocation.moveToBeginningOf(this.cursorLocation.block);
-      } else if (this.cursorLocation.isBeginningOfBlock) {
-        if (!this.cursorLocation.block.isBeginningOfDocument) {
-          this.cursorLocation.moveToBeginningOf(this.cursorLocation.block.previousBlock);
+      if (!this.caretLocation.isBeginningOfBlock) {
+        this.caretLocation.moveToBeginningOf(this.caretLocation.block);
+      } else if (this.caretLocation.isBeginningOfBlock) {
+        if (!this.caretLocation.block.isBeginningOfDocument) {
+          this.caretLocation.moveToBeginningOf(this.caretLocation.block.previousBlock);
         }
       }
 
@@ -286,10 +286,10 @@
     public navigateBlockDown(shouldExtendSelection: boolean) {
       this.setSelectionMode(shouldExtendSelection);
 
-      if (!this.cursorLocation.block.isEndOfDocument) {
-        this.cursorLocation.moveToBeginningOf(this.cursorLocation.block.nextBlock);
+      if (!this.caretLocation.block.isEndOfDocument) {
+        this.caretLocation.moveToBeginningOf(this.caretLocation.block.nextBlock);
       } else {
-        this.cursorLocation.moveToEndOf(this.cursorLocation.block);
+        this.caretLocation.moveToEndOf(this.caretLocation.block);
       }
 
       this.markCursorMovedWithoutState();
@@ -301,7 +301,7 @@
 
       this.movementState = CursorNavigationState.endOfLine;
 
-      this.cursorLocation.moveToEndOfLine();
+      this.caretLocation.moveToEndOfLine();
       this.markCursorMovedWithState();
     }
 
@@ -311,17 +311,18 @@
 
       this.movementState = CursorNavigationState.beginningOfLine;
 
-      this.cursorLocation.moveToBeginningOfLine();
+      this.caretLocation.moveToBeginningOfLine();
       this.markCursorMovedWithState();
     }
 
     /* @inherit from IInputHandler */
     public handleBackspace() {
       this.setSelectionMode(false);
-      // todo handle selected text
 
-      if (this.cursorLocation.isBeginningOfBlock) {
-        var block = this.cursorLocation.block;
+      if (this.hasSelection) {
+        this.caretLocation = this.documentModel.removeBetween(this.selectionStart, this.caretLocation);
+      } else if (this.caretLocation.isBeginningOfBlock) {
+        var block = this.caretLocation.block;
 
         if (block.isBeginningOfDocument) {
           // can't do anything, we're at the beginning
@@ -329,10 +330,10 @@
         }
 
         // TODO handle parents/children
-        this.cursorLocation = EditDocument.mergeBlocks(block.previousBlock, block);
+        this.caretLocation = this.documentModel.mergeBlocks(block.previousBlock, block);
       } else {
-        this.cursorLocation.moveBackwardInBlock();
-        this.cursorLocation.removeNextInBlock();
+        this.caretLocation.moveBackwardInBlock();
+        this.caretLocation.removeNextInBlock();
       }
 
       this.markCursorMovedWithoutState();
@@ -341,19 +342,20 @@
     /* @inherit from IInputHandler */
     public handleDelete() {
       this.setSelectionMode(false);
-      // todo handle selected text
 
-      if (this.cursorLocation.isEndOfBlock) {
-        var block = this.cursorLocation.block;
+      if (this.hasSelection) {
+        this.caretLocation = this.documentModel.removeBetween(this.selectionStart, this.caretLocation);
+      } else if (this.caretLocation.isEndOfBlock) {
+        var block = this.caretLocation.block;
 
         if (block.isEndOfDocument) {
           // can't do anything, we're at the end
           return;
         }
 
-        this.cursorLocation = EditDocument.mergeBlocks(block, block.nextBlock);
+        this.caretLocation = this.documentModel.mergeBlocks(block, block.nextBlock);
       } else {
-        this.cursorLocation.removeNextInBlock();
+        this.caretLocation.removeNextInBlock();
         //this.position.block.element.removeChild(this.position.nextElement);
       }
 
@@ -365,8 +367,8 @@
       // TODO handle selected text
       this.setSelectionMode(false);
 
-      EditDocument.splitBlock(this.cursorLocation);
-      this.cursorLocation.moveForward();
+      EditDocument.splitBlock(this.caretLocation);
+      this.caretLocation.moveForward();
 
       this.markCursorMovedWithoutState();
     }
