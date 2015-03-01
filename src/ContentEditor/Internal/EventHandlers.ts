@@ -27,14 +27,24 @@ module TextRight.Internal {
      * @param instance the object to create the event handler for.
      * @param eventName the name of the event that the event handler will enable or disable.
      * @param handler the method that will be invoked when the event is triggered.
+     * @param shouldBeEnabledByDefault (optional) true if the event handler should be enabled
+     *                                 before returning
      * @return An IEventHandler that is not yet enabled.
      */
     public static from(
       instance: EventTarget,
       eventName: string,
-      handler: (evt) => void)
-      : IEventHandler {
-      return new EventHandler(instance, eventName, handler);
+      handler: (evt) => void,
+      shouldBeEnabledByDefault: boolean = false
+      ) : IEventHandler {
+
+      var eventHandler = new EventHandler(instance, eventName, handler);
+
+      if (shouldBeEnabledByDefault) {
+        eventHandler.enable();
+      }
+
+      return eventHandler;
     }
 
     /**
@@ -45,14 +55,23 @@ module TextRight.Internal {
      * @param eventName the name of the event that the event handler will enable or disable.
      * @param handler the method that will be invoked when any of the instances trigger the
      *                given event.
+     * @param shouldBeEnabledByDefault (optional) true if the event handler should be enabled
+     *                                 before returning
      * @return An IEventHandler that is not yet enabled.
      */
     public static fromMany(
       instances: EventTarget[],
       eventName: string,
-      handler: (evt) => void)
-      : IEventHandler {
-      return new MultiInstanceEventHandler(instances, eventName, handler);
+      handler: (evt) => void,
+      shouldBeEnabledByDefault: boolean = false
+      ) : IEventHandler {
+      var eventHandler = new MultiInstanceEventHandler(instances, eventName, handler);
+
+      if (shouldBeEnabledByDefault) {
+        eventHandler.enable();
+      }
+
+      return eventHandler;
     }
   }
 

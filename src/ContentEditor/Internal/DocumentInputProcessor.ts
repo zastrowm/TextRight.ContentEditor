@@ -64,8 +64,8 @@
       this.mouseDown = EventHandlers.from(
         documentElement,
         "mousedown",
-        evt => this.handleMouseDown(evt));
-      this.mouseDown.enable();
+        evt => this.handleMouseDown(evt),
+        true);
 
       this.mouseMove = EventHandlers.from(
         documentElement,
@@ -77,7 +77,7 @@
         "mouseup",
         evt => this.handleMouseUp(evt));
 
-      EventHandlers.from(element, "keydown", evt => this.handleKeyDown(evt));
+      EventHandlers.from(element, "keydown", evt => this.handleKeyDown(evt), true);
 
       // TODO reduce interval when we can (exponential back off?)
       setInterval(() => this.readInput(), 50);
