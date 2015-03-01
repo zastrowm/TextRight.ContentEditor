@@ -50,6 +50,7 @@
       documentElement.addEventListener("mousedown", evt => this.handleMouseDown(evt));
       documentElement.addEventListener("mousemove", evt => this.handleMouseMove(evt));
       documentElement.addEventListener("mouseup", evt => this.handleMouseUp(evt));
+      window.addEventListener("mouseup", evt => this.handleMouseUp(evt));
 
       element.addEventListener("keydown", evt => this.handleKeyDown(evt));
 
