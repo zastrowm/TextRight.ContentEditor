@@ -288,6 +288,8 @@
 
       if (!this.cursorLocation.block.isEndOfDocument) {
         this.cursorLocation.moveToBeginningOf(this.cursorLocation.block.nextBlock);
+      } else {
+        this.cursorLocation.moveToEndOf(this.cursorLocation.block);
       }
 
       this.markCursorMovedWithoutState();
