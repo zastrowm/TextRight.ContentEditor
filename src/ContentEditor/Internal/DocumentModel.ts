@@ -2,9 +2,10 @@
   import HtmlUtils = TextRight.Utils.HtmlUtils;
   import MathUtils = TextRight.Utils.MathUtils;
 
-  export class DocumentModel {
-    private undoStack: UndoStack;
+  var carriageReturn = "\r";
+  var newline = "\n";
 
+  export class DocumentModel {
     private firstBlockIndicator: HTMLElement;
     private lastBlockIndicator: HTMLElement;
 
@@ -31,10 +32,8 @@
 
       var block = BlockItem.createNewBlock();
 
-      EditDocument.insertBlockAfter(first, block);
-      EditDocument.insertText(block.beginning, text);
-
-      this.undoStack = new UndoStack();
+      this.insertBlockAfter(first, block);
+      this.insertText(block.beginning, text);
     }
 
     /**
@@ -90,6 +89,8 @@
         && y <= rect.bottom;
     }
 
+    
+
     /**
      * Gets a cursor that represents the given x/y coordinates for this document
      */
@@ -102,19 +103,19 @@
 
       var element = document.elementFromPoint(x, y);
 
-      if (EditDocument.isSpan(element)) {
+      if (BlockItem.isSpan(element)) {
         
         // search through to find the span
         var position = new DocumentCursor(
-          EditDocument.blockFromSpan(element),
+          BlockItem.blockFromSpan(element),
           <HTMLSpanElement>element,
           element.firstChild);
         position.moveTowardsPosition(x, y);
 
         return position;
-      } else if (EditDocument.isBlock(element) || EditDocument.isBlockContent(element)) {
+      } else if (BlockItem.isBlock(element) || BlockItem.isBlockContent(element)) {
 
-        var blockElement = EditDocument.isBlock(element)
+        var blockElement = BlockItem.isBlock(element)
           ? element
           : <Element>element.parentNode;
 
@@ -156,24 +157,59 @@
     }
 
     /**
-     * Insert text into the document at the specified location
+     * Inserts text at the cursor location.
+     * @param {DocumentCursor} cursor The location at which the text should be inserted.
+     * @param {string} text The text that should be inserted into the document.
+     * @return a cursor representing the end of the content.
+     *
+     * @remarks Blocks will automatically be created if newlines are contained within
+     *                 the text.  if this is not desired, remove newlines from the given text.
      */
     public insertText(cursor: DocumentCursor, text: string): DocumentCursor {
 
       // TODO fix and try to actually implement this
       if (cursor != null) {
-        return EditDocument.insertText(cursor, text);
+        return this.insertTextAtCursor(cursor, text);
       }
 
       // TODO check if we already inserted text elsewhere
       // TODO handle newlines
 
-      var event = new InsertTextEvent();
-      event.timeStart = DateUtils.timestamp;
-      event.timeEnd = DateUtils.timestamp;
-      event.text = text;
+      return this.insertTextAtCursor(cursor, text);
+    }
 
-      return EditDocument.insertText(cursor, text);
+   
+    private insertTextAtCursor(cursor: DocumentCursor, text: string): DocumentCursor {
+      cursor = cursor.clone();
+      var fragment = document.createDocumentFragment();
+      var fragments: DocumentFragment[] = [fragment];
+
+      text.split("").forEach(part => {
+        if (part === carriageReturn)
+          return;
+
+        if (part === newline) {
+          fragment = document.createDocumentFragment();
+          fragments.push(fragment);
+          return;
+        }
+
+        var span = document.createTextNode(part);
+        fragment.appendChild(span);
+      });
+
+      // insert the current text
+      this.addElementsToCursorAndAdvance(cursor, fragments[0]);
+
+      // if there are more fragments, that means that we had newlines.  So add a bunch of
+      // paragraphs and continue adding content to them
+      for (var i = 1; i < fragments.length; i++) {
+        this.splitBlock(cursor);
+        cursor.moveForward();
+        this.addElementsToCursorAndAdvance(cursor, fragments[i]);
+      }
+
+      return cursor;
     }
 
     /**
@@ -216,6 +252,64 @@
     }
 
     /**
+     * Split the block pointed at by cursor into two blocks.  The content before the cursor
+     * will be its own block and the content after the cursor will be its own block.
+     *
+     * @note The cursor will be updated to point to the end of the block that contains the
+     * content before the cursor.
+     * @param {DocumentCursor} cursor The cursor whose position determines the split point.
+     */
+    public splitBlock(cursor: DocumentCursor): void {
+      var newBlock = BlockItem.createNewBlock();
+
+      // simple: add a blank paragraph before
+      if (cursor.isBeginningOfBlock) {
+        // We're at the beginning of the block, so let's make this simple and just add a
+        // blank paragraph before the current block.
+        this.insertBlockBefore(cursor.block, newBlock);
+        // don't forget to fix up the cursor to point to the end of the "new content" which is
+        // just the blank paragraph
+        cursor.moveToEndOf(newBlock);
+        return;
+      }
+
+      // simple: add a blank paragraph after
+      if (cursor.isEndOfBlock) {
+        this.insertBlockAfter(cursor.block, newBlock);
+        return;
+      }
+
+      // complex: need to extract the contents from inside the block
+
+      var range = document.createRange();
+
+      // If we're at the end of a span, its better to start the selection by selecting the
+      // entirety of the next span, otherwise we'll end up with an empty span, which we do
+      // not allow.  If we're not at the end of a span, it means we're in the middle of one
+      // so just start the selection and the current text node and let the
+      // Range.extractContents() do the magic of extracting the correct hierarchy of
+      // elements.
+      var startSelection = cursor.isEndOfSpan
+        ? cursor.spanElement.nextSibling
+        : cursor.nextNode;
+
+      range.setStartBefore(startSelection);
+      range.setEndAfter(cursor.block.lastContentSpan);
+
+      var contentOfNewBlock = range.extractContents();
+      this.appendToBlock(newBlock, contentOfNewBlock);
+      this.insertBlockAfter(cursor.block, newBlock);
+
+      range.detach();
+
+      // potentially, the text node that we once held in the cursor is no longer in the same
+      // span, so be sure to fix it up before returning
+      if (cursor.textNode != null) {
+        cursor.setTo(cursor.block, <HTMLSpanElement>cursor.textNode.parentNode, cursor.textNode);
+      }
+    }
+
+    /**
      * Add the given fragment to the end of the given block
      * @param block the block to which to append content
      * @param fragment the fragment to append
@@ -255,70 +349,50 @@
 
       return fragment;
     }
-  }
 
+    /**
+      * Add elements to the position pointed to by cursor, and move the cursor forward so
+      * that it points after the newly inserted content.
+      */
+    private addElementsToCursorAndAdvance(cursor: DocumentCursor, fragment: DocumentFragment): void {
+      // TODO, remove cursor if possible
+      var clone = cursor.clone();
+      var isAtEnd = !clone.moveForwardInBlock();
 
+      cursor.add(fragment);
 
-  class UndoStackNode {
-    constructor(public event: UndoEvent, public previous: UndoEvent) {
-    }
-  }
-
-  export class UndoStack {
-    private last: UndoStackNode;
-
-    constructor() {
-    }
-
-    public get isEmpty() {
-      return this.last == null;
-    }
-
-    public push(event: UndoEvent): void {
-      this.last = new UndoStackNode(this.last, event);
+      if (isAtEnd) {
+        cursor.moveToEndOf(cursor.block);
+      } else {
+        clone.moveBackwards();
+        cursor.cloneFrom(clone);
+      }
     }
 
-    public peek(): UndoEvent {
-      return this.last.event;
-    }
-  }
+    /**
+     * Insert a block following the current block.
+     * @param {BlockItem} currentBlock  The block that becomes the previous sibling to the inserted
+     *                                  block.
+     * @param {BlockItem} newBlock The new block inserted after currentBlock.
+     */
+    private insertBlockAfter(currentBlock: BlockItem, newBlock: BlockItem): void {
+      if (currentBlock == null)
+        throw "currentBlock cannot be null";
+      if (newBlock == null)
+        throw "newBlock cannot be null";
 
-  export class DateUtils {
-    public static get timestamp(): number {
-      return Date.now();
-    }
-  }
-
-  export class UndoEvent {
-  }
-
-  class InsertTextEvent {
-    public timeStart: number;
-    public timeEnd: number;
-
-    public blockId: number;
-    public charId: number;
-
-    public text: string;
-  }
-
-  /**
-   * Indicates the number of times something has changed.
-   */
-  export class ChangeCount {
-    private value: number;
-
-    constructor() {
-      this.value = 0;
+      currentBlock.containerElement.parentElement.insertBefore(newBlock.containerElement, currentBlock.nextContainer);
     }
 
-    public get current(): number {
-      return this.value;
+    /**
+     * Insert a block before the current block.
+     *
+     * @note simple method but implemented for readability
+     */
+    private insertBlockBefore(blockItem: BlockItem, newBlock: BlockItem) {
+      blockItem.containerElement.parentElement.insertBefore(newBlock.containerElement, blockItem.containerElement);
     }
 
-    public increment(): number {
-      this.value++;
-      return this.value;
-    }
+
   }
 }

@@ -367,7 +367,7 @@
       // TODO handle selected text
       this.setSelectionMode(false);
 
-      EditDocument.splitBlock(this.caretLocation);
+      this.documentModel.splitBlock(this.caretLocation);
       this.caretLocation.moveForward();
 
       this.markCursorMovedWithoutState();

@@ -41,7 +41,6 @@
     <TypeScriptCompile Include="Internal\DocumentCursor.ts" />
     <TypeScriptCompile Include="Internal\DocumentModel.ts" />
     <TypeScriptCompile Include="Internal\DocumentView.ts" />
-    <TypeScriptCompile Include="Internal\EditDocument.ts" />
     <TypeScriptCompile Include="Internal\ElementClasses.ts" />
     <TypeScriptCompile Include="Internal\EventHandlers.ts" />
     <TypeScriptCompile Include="Internal\PointPosition.ts" />

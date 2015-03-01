@@ -13,6 +13,40 @@
     }
 
     /**
+     * Check if the given element represents a block
+     */
+    public static isBlock(element: Element): boolean {
+      return element.nodeName === "BLOCK";
+    }
+
+    /**
+     * Check if the given element represents the content of a block (aka the
+     * paragraph in the block)
+     */
+    public static isBlockContent(element: Element): boolean {
+      if (element.nodeName !== "P")
+        return false;
+
+      return this.isBlock(<Element>element.parentNode);
+    }
+
+    /**
+     * Check if the given element represents a span within a block
+     */
+    public static isSpan(element: Element): boolean {
+      // TODO not all spans are spans within a block
+      return element.nodeName === "SPAN";
+    }
+
+    /**
+     * Get a block item that represents the block that the given span is contained within
+     */
+    public static blockFromSpan(element: Element): BlockItem {
+      // TODO more error checking
+      return new BlockItem(<HTMLElement>element.parentNode.parentNode);
+    }
+
+    /**
      * Create a new block that can be inserted into he document
      */
     public static createNewBlock() {
