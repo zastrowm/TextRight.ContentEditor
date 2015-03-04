@@ -1,6 +1,6 @@
 ﻿module TextRight.Utils
 {
-  import PointPosition = TextRight.Editor.Internal.PointPosition;
+  import Rect = TextRight.Editor.Internal.Rect;
   
   /**
    * Math related utility functions
@@ -125,11 +125,11 @@
     private static cachedRange = document.createRange();
 
     /**
-     * Convert a ClientRect into a PointPosition, taking into account the windows current
+     * Convert a ClientRect into a Rect, taking into account the windows current
      * scroll position.
      */
-    private static fromClientRect(rect: ClientRect): PointPosition {
-      return new PointPosition(
+    private static fromClientRect(rect: ClientRect): Rect {
+      return new Rect(
         rect.top + window.pageYOffset,
         rect.left + window.pageXOffset,
         rect.height,
@@ -139,14 +139,14 @@
     /**
      * Gets the box outline of the given element, in page coordinates
      */
-    public static getBoundingClientRectOfElement(element: Element): PointPosition {
+    public static getBoundingClientRectOfElement(element: Element): Rect {
       return HtmlUtils.fromClientRect(element.getBoundingClientRect());
     }
 
     /**
      * Get the position of a single node, in page coordinates
      */
-    public static getBoundingClientRectOf(node: Node): PointPosition {
+    public static getBoundingClientRectOf(node: Node): Rect {
       // elements have a much more optimized method of getting the size:
       if (node instanceof Element) {
         return this.getBoundingClientRectOfElement(<HTMLElement>node);

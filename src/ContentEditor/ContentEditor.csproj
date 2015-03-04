@@ -43,7 +43,7 @@
     <TypeScriptCompile Include="Internal\DocumentView.ts" />
     <TypeScriptCompile Include="Internal\ElementClasses.ts" />
     <TypeScriptCompile Include="Internal\EventHandlers.ts" />
-    <TypeScriptCompile Include="Internal\PointPosition.ts" />
+    <TypeScriptCompile Include="Internal\Rect.ts" />
     <TypeScriptCompile Include="Internal\SelectionPresenter.ts" />
     <TypeScriptCompile Include="Internal\DocumentInputProcessor.ts" />
     <TypeScriptCompile Include="TextRight.ts" />

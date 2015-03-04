@@ -1,8 +1,9 @@
 ﻿module TextRight.Editor.Internal {
+
   /**
-   * Encapsulates where a cursor should appear for a given DocumentCursor.
+   * A top/left/height/width container
    */
-  export class PointPosition {
+  export class Rect {
 
     /**
      * Constructor.
@@ -32,9 +33,9 @@
      * considered on the same line if the height of one position continues onto the same
      * line as the top of the other position.
      */
-    public isInlineWith(position: PointPosition) {
-      var first: PointPosition;
-      var second: PointPosition;
+    public isInlineWith(position: Rect) {
+      var first: Rect;
+      var second: Rect;
 
       // get the higher point
       if (this.top <= position.top) {

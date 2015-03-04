@@ -116,7 +116,7 @@
     }
 
     /** Gets the position of the cursor if it was to be drawn. */
-    public getCursorPosition(): PointPosition {
+    public getCursorPosition(): Rect {
       if (this.isBeginningOfBlock) {
         // the only thing we have a position of is the first span
         return DocumentCursor.rightOf(HtmlUtils.getBoundingClientRectOfElement(this.previousSpan));
@@ -130,7 +130,7 @@
       var rect = HtmlUtils.getBoundingClientRectOf(this.textNode);
       var nextRect = HtmlUtils.getBoundingClientRectOf(this.nextNode);
 
-      var point: PointPosition;
+      var point: Rect;
 
       // TODO fix bug that occurs when at end of line and IE shows a double height line.
       if (nextRect.top > rect.top) {
@@ -150,14 +150,14 @@
      * Create a position which looks at the right side of the given client rectangle.
      */
     private static rightOf(rect: ClientRect) {
-      return new PointPosition(rect.top, rect.right, rect.height, 0);
+      return new Rect(rect.top, rect.right, rect.height, 0);
     }
 
     /**
     * Create a position which looks at the left side of the given client rectangle.
     */
     private static leftOf(rect: ClientRect) {
-      return new PointPosition(rect.top, rect.left, rect.height, 0);
+      return new Rect(rect.top, rect.left, rect.height, 0);
     }
 
     /* Add the given element at the cursor position, after the next element. */
