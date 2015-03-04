@@ -119,12 +119,12 @@
     public getCursorPosition(): PointPosition {
       if (this.isBeginningOfBlock) {
         // the only thing we have a position of is the first span
-        return PointPosition.rightOf(this.previousSpan.getBoundingClientRect());
+        return DocumentCursor.rightOf(HtmlUtils.getBoundingClientRectOfElement(this.previousSpan));
       }
 
       if (this.isEndOfBlock) {
         // we don't have a nextNode so the block below will not work
-        return PointPosition.rightOf(HtmlUtils.getBoundingClientRectOf(this.textNode));
+        return DocumentCursor.rightOf(HtmlUtils.getBoundingClientRectOf(this.textNode));
       }
 
       var rect = HtmlUtils.getBoundingClientRectOf(this.textNode);
@@ -138,12 +138,26 @@
         // when we're at the end of "virtual" line in the paragraph, and we have a
         // space character. The position of the next character is actually on
         // the next line, and so we re-position the cursor there
-        point = PointPosition.leftOf(nextRect);
+        point = DocumentCursor.leftOf(nextRect);
       } else {
-        point = PointPosition.rightOf(rect);
+        point = DocumentCursor.rightOf(rect);
       }
 
       return point;
+    }
+
+    /**
+     * Create a position which looks at the right side of the given client rectangle.
+     */
+    private static rightOf(rect: ClientRect) {
+      return new PointPosition(rect.top, rect.right, rect.height, 0);
+    }
+
+    /**
+    * Create a position which looks at the left side of the given client rectangle.
+    */
+    private static leftOf(rect: ClientRect) {
+      return new PointPosition(rect.top, rect.left, rect.height, 0);
     }
 
     /* Add the given element at the cursor position, after the next element. */

@@ -138,7 +138,7 @@
       evt.preventDefault();
       var shouldExtendSelections = evt.shiftKey;
 
-      this.handler.setCaret(evt.clientX, evt.clientY, shouldExtendSelections);
+      this.handler.setCaret(evt.pageX, evt.pageY, shouldExtendSelections);
 
       this.mouseMove.enable();
       this.mouseUp.enable();
@@ -151,7 +151,7 @@
 
       evt.preventDefault();
 
-      this.handler.setCaret(evt.clientX, evt.clientY, true);
+      this.handler.setCaret(evt.pageX, evt.pageY, true);
     }
 
     /* Handle the case where the user stopped the selection */

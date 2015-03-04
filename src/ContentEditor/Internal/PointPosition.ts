@@ -3,27 +3,28 @@
    * Encapsulates where a cursor should appear for a given DocumentCursor.
    */
   export class PointPosition {
+
     /**
      * Constructor.
      * @param {number} top where the top of the cursor would be located.
      * @param {number} left where left of the cursor would be located.
      * @param {number} height the hight of the cursor.
      */
-    constructor(public top: number, public left: number, public height: number) {
-    }
-
-    /**
-     * Create a position which looks at the right side of the given client rectangle.
-     */
-    public static rightOf(rect: ClientRect) {
-      return new PointPosition(rect.top, rect.right, rect.height);
+    constructor(public top: number, public left: number, public height: number, public width: number) {
     }
 
      /**
-     * Create a position which looks at the left side of the given client rectangle.
+     * The height added to the top
      */
-    public static leftOf(rect: ClientRect) {
-      return new PointPosition(rect.top, rect.left, rect.height);
+    public get bottom() {
+      return this.top + this.height;
+    }
+
+    /**
+     * The width added to the left
+     */
+    public get right() {
+      return this.left + this.width;
     }
 
     /**

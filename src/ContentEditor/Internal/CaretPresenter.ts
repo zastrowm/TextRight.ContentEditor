@@ -34,8 +34,8 @@
       var pos = cursor.getCursorPosition();
       var offset = this.documentModel.getOffset();
 
-      HtmlUtils.positionElementWithOffset(this.cursorElement, offset, pos.top, pos.left, pos.height, 1);
-      HtmlUtils.positionElementWithOffset(this.inputTextArea, offset, pos.top, pos.left, pos.height, 1);
+      HtmlUtils.positionElement(this.cursorElement, pos.top, pos.left, pos.height, 1);
+      HtmlUtils.positionElement(this.inputTextArea, pos.top, pos.left, pos.height, 1);
     }
 
     /**

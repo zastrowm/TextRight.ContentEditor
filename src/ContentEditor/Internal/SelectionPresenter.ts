@@ -34,8 +34,8 @@
       var endPosition = selectionEnd.getCursorPosition();
       var startPosition = selectionStart.getCursorPosition();
 
-      var endBlock = selectionEnd.block.contentElement.getBoundingClientRect();
-      var startBlock = selectionStart.block.contentElement.getBoundingClientRect();
+      var endBlock = HtmlUtils.getBoundingClientRectOfElement(selectionEnd.block.contentElement);
+      var startBlock = HtmlUtils.getBoundingClientRectOfElement(selectionStart.block.contentElement);
 
       var isOnSameLine = startPosition.isInlineWith(endPosition);
 
@@ -60,8 +60,6 @@
 
       var heightOfMiddle = endPosition.top - startPosition.top - startPosition.height;
 
-      var offset = this.documentModel.getOffset();
-
       if (isOnSameLine) {
         // if the start and end selection are on the same line, we don't need 3 different parts to show the selection,
         // we merely need a selection stretching from start to end
@@ -69,10 +67,7 @@
         var height = Math.max(startPosition.height, endPosition.height);
         var top = Math.min(startPosition.top, endPosition.top);
 
-        this.elementTop.style.top = (top + offset.top) + 'px';
-        this.elementTop.style.height = height + 'px';
-        this.elementTop.style.left = (startPosition.left + offset.left) + 'px';
-        this.elementTop.style.width = (endPosition.left - startPosition.left) + 'px';
+        HtmlUtils.positionElement(this.elementTop, top, startPosition.left, height, endPosition.left - startPosition.left);
 
         this.elementTop.style.display = "block";
         this.elementMid.style.display = "none";
@@ -95,13 +90,13 @@
         // get rid of any cumulative rounding errors by adding in the error found thus far
         var botHeight = (endPosition.top - botTop + endPosition.height ) | 0;
 
-        HtmlUtils.positionElementWithOffset(this.elementTop, offset, topTop, startPosition.left, topHeight, rightMost - startPosition.left);
+        HtmlUtils.positionElement(this.elementTop, topTop, startPosition.left, topHeight, rightMost - startPosition.left);
         this.elementTop.style.display = "block";
 
-        HtmlUtils.positionElementWithOffset(this.elementMid, offset, midTop, leftMost, midHeight, rightMost - leftMost);
+        HtmlUtils.positionElement(this.elementMid, midTop, leftMost, midHeight, rightMost - leftMost);
         this.elementMid.style.display = "block";
 
-        HtmlUtils.positionElementWithOffset(this.elementBot, offset, botTop, leftMost, botHeight, endPosition.left - leftMost);
+        HtmlUtils.positionElement(this.elementBot, botTop, leftMost, botHeight, endPosition.left - leftMost);
         this.elementBot.style.display = "block";
       }
     }

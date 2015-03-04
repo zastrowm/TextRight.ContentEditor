@@ -36,25 +36,6 @@
       this.insertText(block.beginning, text);
     }
 
-    /**
-     * Get the offset between getBoundingClientRect() and the top of the element.  This is
-     * used primarily for anything that calls getBoundingClientRect() and needs to position
-     * things accordingly. getBoundingClientRect() returns client coordinates while
-     * absolutely positioned items need page offset.  So by adding the offset acquired by
-     * this method, you can translate your client rect to a page rect.
-     * @return The offset between client coordinates and page coordinates.
-     */
-    public getOffset(): { left: number; top: number } {
-      var doc = this.element;
-      var client = doc.getBoundingClientRect();
-      var diffTop = doc.offsetTop - client.top;
-      var diffLeft = doc.offsetLeft - client.left;
-
-      return {
-        left: diffLeft,
-        top: diffTop
-      };
-    }
 
     /**
      * The html div element that represents the top-level document container
@@ -78,30 +59,16 @@
     }
 
     /**
-     * Check if the given x/y coordinates are part of this document
-     */
-    public isCoordinatesInsideDocument(x: number, y: number) {
-      var rect = this.element.getBoundingClientRect();
-
-      return x >= rect.left
-        && x <= rect.right
-        && y >= rect.top
-        && y <= rect.bottom;
-    }
-
-    
-
-    /**
      * Gets a cursor that represents the given x/y coordinates for this document
      */
     public getCursorFromLocation(x: number, y: number): DocumentCursor {
-      var rect = this.element.getBoundingClientRect();
+      var rect = HtmlUtils.getBoundingClientRectOfElement(this.element);
 
       // clamp it inside the document bounds... 
       x = MathUtils.clamp(x, rect.left, rect.right);
       y = MathUtils.clamp(y, rect.top, rect.bottom);
 
-      var element = document.elementFromPoint(x, y);
+      var element = document.elementFromPoint(x - window.pageXOffset, y - pageYOffset);
 
       if (BlockItem.isSpan(element)) {
         
@@ -125,8 +92,8 @@
 
         var firstBlock = this.firstBlock;
 
-        var beginPosition = this.firstBlock.containerElement.getBoundingClientRect().top;
-        var endPosition = this.lastBlock.containerElement.getBoundingClientRect().bottom;
+        var beginPosition = HtmlUtils.getBoundingClientRectOfElement(this.firstBlock.containerElement).top;
+        var endPosition = HtmlUtils.getBoundingClientRectOfElement(this.lastBlock.containerElement).bottom;
 
         if (y < beginPosition) {
           return this.getCursorForPositionForBlock(x, y, this.firstBlock);
@@ -144,7 +111,7 @@
      * Get a cursor that represents a location close to the given x/y value within the block
      */
     private getCursorForPositionForBlock(x: number, y: number, block: BlockItem) {
-      var contentRect = block.containerElement.getBoundingClientRect();
+      var contentRect = HtmlUtils.getBoundingClientRectOfElement(block.containerElement);
 
       x = MathUtils.clamp(x, contentRect.left, contentRect.right);
       y = MathUtils.clamp(y, contentRect.top, contentRect.bottom);
@@ -166,12 +133,6 @@
      *                 the text.  if this is not desired, remove newlines from the given text.
      */
     public insertText(cursor: DocumentCursor, text: string): DocumentCursor {
-
-      // TODO fix and try to actually implement this
-      if (cursor != null) {
-        return this.insertTextAtCursor(cursor, text);
-      }
-
       // TODO check if we already inserted text elsewhere
       // TODO handle newlines
 

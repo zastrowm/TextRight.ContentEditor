@@ -1,5 +1,6 @@
 ﻿module TextRight.Utils
 {
+  import PointPosition = TextRight.Editor.Internal.PointPosition;
   
   /**
    * Math related utility functions
@@ -124,20 +125,38 @@
     private static cachedRange = document.createRange();
 
     /**
-     * Get the position of a single node
+     * Convert a ClientRect into a PointPosition, taking into account the windows current
+     * scroll position.
      */
-    public static getBoundingClientRectOf(node: Node): ClientRect {
+    private static fromClientRect(rect: ClientRect): PointPosition {
+      return new PointPosition(
+        rect.top + window.pageYOffset,
+        rect.left + window.pageXOffset,
+        rect.height,
+        rect.width);
+    }
+
+    /**
+     * Gets the box outline of the given element, in page coordinates
+     */
+    public static getBoundingClientRectOfElement(element: Element): PointPosition {
+      return HtmlUtils.fromClientRect(element.getBoundingClientRect());
+    }
+
+    /**
+     * Get the position of a single node, in page coordinates
+     */
+    public static getBoundingClientRectOf(node: Node): PointPosition {
       // elements have a much more optimized method of getting the size:
       if (node instanceof Element) {
-        var element = <Element>node;
-        return element.getBoundingClientRect();
+        return this.getBoundingClientRectOfElement(<HTMLElement>node);
       }
 
       var range = HtmlUtils.cachedRange;
       range.selectNode(node);
       var rect = range.getBoundingClientRect();
 
-      return rect;
+      return HtmlUtils.fromClientRect(rect);
     }
 
     /**
@@ -148,18 +167,17 @@
     }
 
     /**
-     * Set the top/left/height/width of an element, first applying a top/left offset
+     * Set the top/left/height/width of an element
      */
-    public static positionElementWithOffset(
+    public static positionElement(
       element: HTMLElement,
-      offset: {top: number; left: number},
       top: number,
       left: number,
       height: number,
       width: number) {
 
-      element.style.top = (top + offset.top) + "px";
-      element.style.left = (left + offset.left) + "px";
+      element.style.top = (top) + "px";
+      element.style.left = (left) + "px";
       element.style.height = (height) + "px";
       element.style.width = (width) + "px";
     }
