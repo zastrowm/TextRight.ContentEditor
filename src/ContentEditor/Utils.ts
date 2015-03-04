@@ -1,7 +1,7 @@
 ﻿module TextRight.Utils
 {
   import Rect = TextRight.Editor.Internal.Rect;
-  
+
   /**
    * Math related utility functions
    */

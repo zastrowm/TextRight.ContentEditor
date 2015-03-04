@@ -35,6 +35,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="Extensions.ts" />
     <TypeScriptCompile Include="Internal\BlockItem.ts" />
+    <TypeScriptCompile Include="Internal\DocumentCache.ts" />
     <TypeScriptCompile Include="Internal\CaretPresenter.ts" />
     <TypeScriptCompile Include="Internal\CharacterCategorizer.ts" />
     <TypeScriptCompile Include="Internal\CursorNavigationState.ts" />
@@ -43,6 +44,7 @@
     <TypeScriptCompile Include="Internal\DocumentView.ts" />
     <TypeScriptCompile Include="Internal\ElementClasses.ts" />
     <TypeScriptCompile Include="Internal\EventHandlers.ts" />
+    <TypeScriptCompile Include="Internal\ISnapshotToken.ts" />
     <TypeScriptCompile Include="Internal\Rect.ts" />
     <TypeScriptCompile Include="Internal\SelectionPresenter.ts" />
     <TypeScriptCompile Include="Internal\DocumentInputProcessor.ts" />

@@ -1,13 +1,13 @@
 ﻿module TextRight.Editor.Internal {
   import HtmlUtils = TextRight.Utils.HtmlUtils;
   import MathUtils = TextRight.Utils.MathUtils;
-
   var carriageReturn = "\r";
   var newline = "\n";
 
   export class DocumentModel {
     private firstBlockIndicator: HTMLElement;
     private lastBlockIndicator: HTMLElement;
+    private cache: DocumentCache;
 
     /**
      * Create a new editable document from a div element
@@ -17,6 +17,8 @@
      * @return A block representing the beginning of the document.
      */
     constructor(private element: HTMLDivElement) {
+
+      this.cache = new DocumentCache(this);
 
       // we're gonna put the text back later
       var text = element.textContent;
@@ -35,7 +37,6 @@
       this.insertBlockAfter(first, block);
       this.insertText(block.beginning, text);
     }
-
 
     /**
      * The html div element that represents the top-level document container
@@ -58,6 +59,11 @@
       return new BlockItem(this.lastBlockIndicator.previousElementSibling);
     }
 
+    /** Returns true if the given block container is the last block in this document. */
+    public isLastBlockContainer(blockContainer: HTMLElement) {
+      return blockContainer.nextElementSibling == this.lastBlockIndicator;
+    }
+
     /**
      * Gets a cursor that represents the given x/y coordinates for this document
      */
@@ -78,7 +84,6 @@
           <HTMLSpanElement>element,
           element.firstChild);
         position.moveTowardsPosition(x, y);
-
         return position;
       } else if (BlockItem.isBlock(element) || BlockItem.isBlockContent(element)) {
 
@@ -191,6 +196,9 @@
      * @return A DocumentCursor pointing to what used to be the beginning of mergeInto block.
      */
     public mergeBlocks(mergeInto: BlockItem, blockToMerge: BlockItem): DocumentCursor {
+
+      this.cache.invalidateIndicesBefore(mergeInto);
+
       if (blockToMerge.isEmpty) {
         // we're merging in an empty block, so just remove the block
         this.removeBlock(blockToMerge);
@@ -222,6 +230,8 @@
      */
     public splitBlock(cursor: DocumentCursor): void {
       var newBlock = BlockItem.createNewBlock();
+
+      this.cache.invalidateIndicesBefore(cursor.block);
 
       // simple: add a blank paragraph before
       if (cursor.isBeginningOfBlock) {

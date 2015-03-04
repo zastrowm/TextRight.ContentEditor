@@ -151,6 +151,7 @@
 
       if (position != null) {
         this.caretLocation = position;
+        this.caretLocation.block;
         this.markCursorMovedWithoutState();
       }
     }
