@@ -41,7 +41,7 @@
       newParagaph.appendChild(firstSpan);
       newParagaph.appendChild(lastChild);
 
-      return Block.getContainerElement(newContainer);
+      return Block.fromContainer(newContainer);
     }
 
 
@@ -76,7 +76,7 @@
      */
     public static blockFromSpan(element: Element): Block {
       // TODO more error checking
-      return Block.getContainerElement(<HTMLElement>element.parentNode.parentNode);
+      return Block.fromContainer(<HTMLElement>element.parentNode.parentNode);
     }
 
     /** Returns true if the block is the first block in the document. */
@@ -90,16 +90,16 @@
     }
 
     /** Convert this block into a container */
-    public static toContainer(block: Block): HTMLElement {
+    public static getContainerElement(block: Block): HTMLElement {
       return <HTMLElement><any>block;
     }
 
     /** Convert this block from a container */
-    public static getContainerElement(container: HTMLElement): Block {
+    public static fromContainer(container: HTMLElement): Block {
       return <Block><any>container;
     }
 
-    /** Get the paragraph elemetn that actually contains the spans for the block */
+    /** Get the paragraph element that actually contains the spans for the block */
     public static getContentElement(block: Block): HTMLElement {
       return (<HTMLElement><any>block).firstElementChild;
     }

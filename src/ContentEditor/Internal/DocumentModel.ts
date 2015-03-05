@@ -30,7 +30,7 @@
       this.lastBlockIndicator = HtmlUtils.appendNewElement(element, "div", ElementClasses.lastBlock);
 
       // fake block to insert the first block
-      var first = Block.getContainerElement(<HTMLDivElement>element.children[0]);
+      var first = Block.fromContainer(<HTMLDivElement>element.children[0]);
 
       var block = Block.createNewBlock();
 
@@ -49,14 +49,14 @@
      * The first block item in the document
      */
     public get firstBlock(): Block {
-      return Block.getContainerElement(this.firstBlockIndicator.nextElementSibling);
+      return Block.fromContainer(this.firstBlockIndicator.nextElementSibling);
     }
 
     /**
      * The last block item in the document
      */
     public get lastBlock(): Block {
-      return Block.getContainerElement(this.lastBlockIndicator.previousElementSibling);
+      return Block.fromContainer(this.lastBlockIndicator.previousElementSibling);
     }
 
     /** Returns true if the given block container is the last block in this document. */
@@ -91,14 +91,14 @@
           ? element
           : <Element>element.parentNode;
 
-        var block = Block.getContainerElement(<HTMLElement>blockElement);
+        var block = Block.fromContainer(<HTMLElement>blockElement);
         return this.getCursorForPositionForBlock(x, y, block);
       } else {
 
         var firstBlock = this.firstBlock;
 
-        var beginPosition = HtmlUtils.getBoundingClientRectOfElement(Block.toContainer(this.firstBlock)).top;
-        var endPosition = HtmlUtils.getBoundingClientRectOfElement(Block.toContainer(this.lastBlock)).bottom;
+        var beginPosition = HtmlUtils.getBoundingClientRectOfElement(Block.getContainerElement(this.firstBlock)).top;
+        var endPosition = HtmlUtils.getBoundingClientRectOfElement(Block.getContainerElement(this.lastBlock)).bottom;
 
         if (y < beginPosition) {
           return this.getCursorForPositionForBlock(x, y, this.firstBlock);
@@ -116,7 +116,7 @@
      * Get a cursor that represents a location close to the given x/y value within the block
      */
     private getCursorForPositionForBlock(x: number, y: number, block: Block) {
-      var contentRect = HtmlUtils.getBoundingClientRectOfElement(Block.toContainer(block));
+      var contentRect = HtmlUtils.getBoundingClientRectOfElement(Block.getContainerElement(block));
 
       x = MathUtils.clamp(x, contentRect.left, contentRect.right);
       y = MathUtils.clamp(y, contentRect.top, contentRect.bottom);
@@ -316,7 +316,7 @@
       fragment.removeChild(fragment.firstChild);
       fragment.removeChild(fragment.lastChild);
 
-      HtmlUtils.removeElement(Block.toContainer(blockToRemove));
+      HtmlUtils.removeElement(Block.getContainerElement(blockToRemove));
 
       return fragment;
     }
@@ -352,7 +352,7 @@
       if (newBlock == null)
         throw "newBlock cannot be null";
 
-      Block.toContainer(currentBlock).parentElement.insertBefore(Block.toContainer(newBlock), Block.getNextContainer(currentBlock));
+      Block.getContainerElement(currentBlock).parentElement.insertBefore(Block.getContainerElement(newBlock), Block.getNextContainer(currentBlock));
     }
 
     /**
@@ -361,7 +361,7 @@
      * @note simple method but implemented for readability
      */
     private insertBlockBefore(block: Block, newBlock: Block) {
-      Block.toContainer(block).parentElement.insertBefore(Block.toContainer(newBlock), Block.toContainer(block));
+      Block.getContainerElement(block).parentElement.insertBefore(Block.getContainerElement(newBlock), Block.getContainerElement(block));
     }
 
 

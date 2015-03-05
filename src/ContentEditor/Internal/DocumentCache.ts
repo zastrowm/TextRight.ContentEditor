@@ -35,7 +35,7 @@ module TextRight.Editor.Internal {
      * Get the index of the specified block within the document
      */
     public getIndexOf(block: Block): number {
-      var container = Block.toContainer(block);
+      var container = Block.getContainerElement(block);
       var blockCache = this.getBlockCacheFor(container);
 
       // if the index is valid, then we can directly return that
@@ -62,7 +62,7 @@ module TextRight.Editor.Internal {
 
       // start at the beginning of the last indexed element was not valid or non-existent
       if (currentElement == null) {
-        currentElement = Block.toContainer(this.documentModel.firstBlock);
+        currentElement = Block.getContainerElement(this.documentModel.firstBlock);
         currentIndex = 0;
       }
 

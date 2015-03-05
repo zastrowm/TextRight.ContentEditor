@@ -37,7 +37,7 @@
      * @returns undefined value that has no meaning
      */
     public validate(): any {
-      if (this.spanElement.parentElement.parentElement !== Block.toContainer(this.block))
+      if (this.spanElement.parentElement.parentElement !== Block.getContainerElement(this.block))
         throw "Incorrect container element";
 
       // access each getter (ors don't really matter)
