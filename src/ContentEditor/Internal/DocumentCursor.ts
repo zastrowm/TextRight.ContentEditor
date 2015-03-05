@@ -9,7 +9,7 @@
      * Constructor.
      */
     constructor(
-      public block: BlockItem,
+      public block: Block,
       public spanElement: HTMLSpanElement,
       public textNode: Node) {
     }
@@ -24,7 +24,7 @@
     /**
      * Update the cursor to point at the given position
      */
-    public setTo(block: BlockItem, spanElement: HTMLSpanElement, textNode: Node) {
+    public setTo(block: Block, spanElement: HTMLSpanElement, textNode: Node) {
       this.block = block;
       this.spanElement = spanElement;
       this.textNode = textNode;
@@ -37,15 +37,15 @@
      * @returns undefined value that has no meaning
      */
     public validate(): any {
-      if (this.spanElement.parentElement.parentElement !== this.block.containerElement)
+      if (this.spanElement.parentElement.parentElement !== Block.toContainer(this.block))
         throw "Incorrect container element";
 
       // access each getter (ors don't really matter)
       var isValid = 0
         | <any>this.isBeginningOfBlock
         | <any>this.isEndOfBlock
-        | <any>this.block.isBeginningOfDocument
-        | <any>this.block.isEndOfDocument
+        | <any>Block.isBeginningOfDocument(this.block)
+        | <any>Block.isEndOfDocument(this.block)
         ;
 
       return isValid;
@@ -170,18 +170,18 @@
     }
 
     /** Moves the position to the beginning of the given paragraph. */
-    public moveToBeginningOf(block: BlockItem) {
+    public moveToBeginningOf(block: Block) {
       this.block = block;
-      this.spanElement = block.firstContentSpan;
+      this.spanElement = Block.getfirstContentSpan(block);
       this.textNode = null;
     }
 
     /**
      * Moves the cursor to the end of the designated block.
      */
-    public moveToEndOf(block: BlockItem) {
+    public moveToEndOf(block: Block) {
       this.block = block;
-      this.spanElement = block.lastContentSpan;
+      this.spanElement = Block.getlastContentSpan(block);
       this.textNode = this.spanElement.lastChild;
     }
 
@@ -243,12 +243,12 @@
     public moveBackwards(): boolean {
       if (!this.moveBackwardInBlock()) {
         var block = this.block;
-        if (block.isBeginningOfDocument) {
+        if (Block.isBeginningOfDocument(block)) {
           // can't do anything, we're at the beginning
           return false;
         }
 
-        this.moveToEndOf(block.previousBlock);
+        this.moveToEndOf(Block.getPreviousBlock(block));
       }
 
       return true;
@@ -264,12 +264,12 @@
         // only fails if we're at the end
         var block = this.block;
 
-        if (block.isEndOfDocument) {
+        if (Block.isEndOfDocument(block)) {
           // can't do anything, we're at the end
           return false;
         }
 
-        this.moveToBeginningOf(block.nextBlock);
+        this.moveToBeginningOf(Block.getNextBlock(block));
       }
 
       return true;

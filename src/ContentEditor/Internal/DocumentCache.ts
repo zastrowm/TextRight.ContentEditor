@@ -19,13 +19,13 @@ module TextRight.Editor.Internal {
     /**
      * Mark all block indicies before the given block as invalid.
      */
-    public invalidateIndicesBefore(block: BlockItem) {
+    public invalidateIndicesBefore(block: Block) {
 
       // mark the block before this one as the last good block
-      if (block.isBeginningOfDocument) {
+      if (Block.isBeginningOfDocument(block)) {
         this.lastBlockElementIndexed = null;
       } else {
-        this.lastBlockElementIndexed = block.previousContainer;
+        this.lastBlockElementIndexed = Block.getPreviousContainer(block);
       }
 
       this.indexTokenProvider.increment();
@@ -34,8 +34,8 @@ module TextRight.Editor.Internal {
     /**
      * Get the index of the specified block within the document
      */
-    public getIndexOf(block: BlockItem): number {
-      var container = block.containerElement;
+    public getIndexOf(block: Block): number {
+      var container = Block.toContainer(block);
       var blockCache = this.getBlockCacheFor(container);
 
       // if the index is valid, then we can directly return that
@@ -62,7 +62,7 @@ module TextRight.Editor.Internal {
 
       // start at the beginning of the last indexed element was not valid or non-existent
       if (currentElement == null) {
-        currentElement = this.documentModel.firstBlock.containerElement;
+        currentElement = Block.toContainer(this.documentModel.firstBlock);
         currentIndex = 0;
       }
 

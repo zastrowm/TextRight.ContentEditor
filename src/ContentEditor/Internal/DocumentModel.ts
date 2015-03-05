@@ -30,12 +30,12 @@
       this.lastBlockIndicator = HtmlUtils.appendNewElement(element, "div", ElementClasses.lastBlock);
 
       // fake block to insert the first block
-      var first = new BlockItem(<HTMLDivElement>element.children[0]);
+      var first = Block.getContainerElement(<HTMLDivElement>element.children[0]);
 
-      var block = BlockItem.createNewBlock();
+      var block = Block.createNewBlock();
 
       this.insertBlockAfter(first, block);
-      this.insertText(block.beginning, text);
+      this.insertText(Block.getBeginning(block), text);
     }
 
     /**
@@ -48,15 +48,15 @@
     /**
      * The first block item in the document
      */
-    public get firstBlock(): BlockItem {
-      return new BlockItem(this.firstBlockIndicator.nextElementSibling);
+    public get firstBlock(): Block {
+      return Block.getContainerElement(this.firstBlockIndicator.nextElementSibling);
     }
 
     /**
      * The last block item in the document
      */
-    public get lastBlock(): BlockItem {
-      return new BlockItem(this.lastBlockIndicator.previousElementSibling);
+    public get lastBlock(): Block {
+      return Block.getContainerElement(this.lastBlockIndicator.previousElementSibling);
     }
 
     /** Returns true if the given block container is the last block in this document. */
@@ -76,29 +76,29 @@
 
       var element = document.elementFromPoint(x - window.pageXOffset, y - pageYOffset);
 
-      if (BlockItem.isSpan(element)) {
+      if (Block.isSpan(element)) {
         
         // search through to find the span
         var position = new DocumentCursor(
-          BlockItem.blockFromSpan(element),
+          Block.blockFromSpan(element),
           <HTMLSpanElement>element,
           element.firstChild);
         position.moveTowardsPosition(x, y);
         return position;
-      } else if (BlockItem.isBlock(element) || BlockItem.isBlockContent(element)) {
+      } else if (Block.isBlock(element) || Block.isBlockContent(element)) {
 
-        var blockElement = BlockItem.isBlock(element)
+        var blockElement = Block.isBlock(element)
           ? element
           : <Element>element.parentNode;
 
-        var block = new BlockItem(<HTMLElement>blockElement);
+        var block = Block.getContainerElement(<HTMLElement>blockElement);
         return this.getCursorForPositionForBlock(x, y, block);
       } else {
 
         var firstBlock = this.firstBlock;
 
-        var beginPosition = HtmlUtils.getBoundingClientRectOfElement(this.firstBlock.containerElement).top;
-        var endPosition = HtmlUtils.getBoundingClientRectOfElement(this.lastBlock.containerElement).bottom;
+        var beginPosition = HtmlUtils.getBoundingClientRectOfElement(Block.toContainer(this.firstBlock)).top;
+        var endPosition = HtmlUtils.getBoundingClientRectOfElement(Block.toContainer(this.lastBlock)).bottom;
 
         if (y < beginPosition) {
           return this.getCursorForPositionForBlock(x, y, this.firstBlock);
@@ -115,15 +115,15 @@
     /**
      * Get a cursor that represents a location close to the given x/y value within the block
      */
-    private getCursorForPositionForBlock(x: number, y: number, block: BlockItem) {
-      var contentRect = HtmlUtils.getBoundingClientRectOfElement(block.containerElement);
+    private getCursorForPositionForBlock(x: number, y: number, block: Block) {
+      var contentRect = HtmlUtils.getBoundingClientRectOfElement(Block.toContainer(block));
 
       x = MathUtils.clamp(x, contentRect.left, contentRect.right);
       y = MathUtils.clamp(y, contentRect.top, contentRect.bottom);
 
       // TODO optimize so that we don't go through EVERY span and so that
       // if we're towards the end, we start from the beginning
-      var cursor = block.beginning;
+      var cursor = Block.getBeginning(block);
       cursor.moveTowardsPosition(x, y);
       return cursor;
     }
@@ -191,29 +191,29 @@
 
     /**
      * Merge the contents of two blocks.
-     * @param {BlockItem} mergeInto The block to merge the blockToMerge into.
-     * @param {BlockItem} blockToMerge The block to merge into mergeInto.
+     * @param {Block} mergeInto The block to merge the blockToMerge into.
+     * @param {Block} blockToMerge The block to merge into mergeInto.
      * @return A DocumentCursor pointing to what used to be the beginning of mergeInto block.
      */
-    public mergeBlocks(mergeInto: BlockItem, blockToMerge: BlockItem): DocumentCursor {
+    public mergeBlocks(mergeInto: Block, blockToMerge: Block): DocumentCursor {
 
       this.cache.invalidateIndicesBefore(mergeInto);
 
-      if (blockToMerge.isEmpty) {
+      if (Block.isEmpty(blockToMerge)) {
         // we're merging in an empty block, so just remove the block
         this.removeBlock(blockToMerge);
-        return mergeInto.end;
+        return Block.getEnd(mergeInto);
       }
 
-      var wasMergeIntoBlockEmpty = mergeInto.isEmpty;
+      var wasMergeIntoBlockEmpty = Block.isEmpty(mergeInto);
       var oldContent = this.removeBlock(blockToMerge);
 
       if (wasMergeIntoBlockEmpty) {
         this.appendToBlock(mergeInto, oldContent);
-        return mergeInto.beginning;
+        return Block.getBeginning(mergeInto);
       }
 
-      var newCursor = mergeInto.end;
+      var newCursor = Block.getEnd(mergeInto);
       newCursor.moveBackwardInBlock();
       this.appendToBlock(mergeInto, oldContent);
       newCursor.moveForward();
@@ -229,7 +229,7 @@
      * @param {DocumentCursor} cursor The cursor whose position determines the split point.
      */
     public splitBlock(cursor: DocumentCursor): void {
-      var newBlock = BlockItem.createNewBlock();
+      var newBlock = Block.createNewBlock();
 
       this.cache.invalidateIndicesBefore(cursor.block);
 
@@ -265,7 +265,7 @@
         : cursor.nextNode;
 
       range.setStartBefore(startSelection);
-      range.setEndAfter(cursor.block.lastContentSpan);
+      range.setEndAfter(Block.getlastContentSpan(cursor.block));
 
       var contentOfNewBlock = range.extractContents();
       this.appendToBlock(newBlock, contentOfNewBlock);
@@ -285,15 +285,15 @@
      * @param block the block to which to append content
      * @param fragment the fragment to append
      */
-    private appendToBlock(block: BlockItem, fragment: DocumentFragment) {
-      var lastContent = block.lastContentSpan;
+    private appendToBlock(block: Block, fragment: DocumentFragment) {
+      var lastContent = Block.getlastContentSpan(block);
 
       // we CANNOT allow empty spans, so remove the existing empty span if it exists
-      if (block.isEmpty) {
-        block.contentElement.removeChild(block.firstContentSpan);
+      if (Block.isEmpty(block)) {
+        Block.getContentElement(block).removeChild(Block.getfirstContentSpan(block));
       }
 
-      block.contentElement.insertBefore(fragment, block.contentElement.lastElementChild);
+      Block.getContentElement(block).insertBefore(fragment, Block.getContentElement(block).lastElementChild);
 
       var nextSpan = lastContent.nextElementSibling;
 
@@ -311,12 +311,12 @@
      * Removes the block from the document, returning the content (without indicators) of
      * the block.
      */
-    private removeBlock(blockToRemove: BlockItem): DocumentFragment {
-      var fragment = HtmlUtils.convertToFragment(blockToRemove.contentElement);
+    private removeBlock(blockToRemove: Block): DocumentFragment {
+      var fragment = HtmlUtils.convertToFragment(Block.getContentElement(blockToRemove));
       fragment.removeChild(fragment.firstChild);
       fragment.removeChild(fragment.lastChild);
 
-      HtmlUtils.removeElement(blockToRemove.containerElement);
+      HtmlUtils.removeElement(Block.toContainer(blockToRemove));
 
       return fragment;
     }
@@ -342,17 +342,17 @@
 
     /**
      * Insert a block following the current block.
-     * @param {BlockItem} currentBlock  The block that becomes the previous sibling to the inserted
+     * @param {Block} currentBlock  The block that becomes the previous sibling to the inserted
      *                                  block.
-     * @param {BlockItem} newBlock The new block inserted after currentBlock.
+     * @param {Block} newBlock The new block inserted after currentBlock.
      */
-    private insertBlockAfter(currentBlock: BlockItem, newBlock: BlockItem): void {
+    private insertBlockAfter(currentBlock: Block, newBlock: Block): void {
       if (currentBlock == null)
         throw "currentBlock cannot be null";
       if (newBlock == null)
         throw "newBlock cannot be null";
 
-      currentBlock.containerElement.parentElement.insertBefore(newBlock.containerElement, currentBlock.nextContainer);
+      Block.toContainer(currentBlock).parentElement.insertBefore(Block.toContainer(newBlock), Block.getNextContainer(currentBlock));
     }
 
     /**
@@ -360,8 +360,8 @@
      *
      * @note simple method but implemented for readability
      */
-    private insertBlockBefore(blockItem: BlockItem, newBlock: BlockItem) {
-      blockItem.containerElement.parentElement.insertBefore(newBlock.containerElement, blockItem.containerElement);
+    private insertBlockBefore(block: Block, newBlock: Block) {
+      Block.toContainer(block).parentElement.insertBefore(Block.toContainer(newBlock), Block.toContainer(block));
     }
 
 

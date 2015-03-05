@@ -34,7 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Extensions.ts" />
-    <TypeScriptCompile Include="Internal\BlockItem.ts" />
+    <TypeScriptCompile Include="Internal\Block.ts" />
     <TypeScriptCompile Include="Internal\DocumentCache.ts" />
     <TypeScriptCompile Include="Internal\CaretPresenter.ts" />
     <TypeScriptCompile Include="Internal\CharacterCategorizer.ts" />

@@ -36,8 +36,8 @@
       this.characterCategorizer = CharacterCategorizer.instance;
 
       this.documentModel = new DocumentModel(element);
-      this.caretLocation = this.documentModel.firstBlock.beginning;
-      this.selectionStart = this.documentModel.firstBlock.beginning;
+      this.caretLocation = Block.getBeginning(this.documentModel.firstBlock);
+      this.selectionStart = Block.getBeginning(this.documentModel.firstBlock);
 
       this.initializeTextArea();
 
@@ -201,8 +201,8 @@
       this.setSelectionMode(shouldExtendSelection);
 
       if (this.caretLocation.isBeginningOfBlock) {
-        if (!this.caretLocation.block.isBeginningOfDocument) {
-          this.caretLocation.moveToEndOf(this.caretLocation.block.previousBlock);
+        if (!Block.isBeginningOfDocument(this.caretLocation.block)) {
+          this.caretLocation.moveToEndOf(Block.getPreviousBlock(this.caretLocation.block));
         }
       } else {
         var cursor = this.caretLocation;
@@ -239,8 +239,8 @@
       this.setSelectionMode(shouldExtendSelection);
 
       if (this.caretLocation.isEndOfBlock) {
-        if (!this.caretLocation.block.isEndOfDocument) {
-          this.caretLocation.moveToBeginningOf(this.caretLocation.block.nextBlock);
+        if (!Block.isEndOfDocument(this.caretLocation.block)) {
+          this.caretLocation.moveToBeginningOf(Block.getNextBlock(this.caretLocation.block));
         }
       } else {
         var cursor = this.caretLocation;
@@ -275,8 +275,8 @@
       if (!this.caretLocation.isBeginningOfBlock) {
         this.caretLocation.moveToBeginningOf(this.caretLocation.block);
       } else if (this.caretLocation.isBeginningOfBlock) {
-        if (!this.caretLocation.block.isBeginningOfDocument) {
-          this.caretLocation.moveToBeginningOf(this.caretLocation.block.previousBlock);
+        if (!Block.isBeginningOfDocument(this.caretLocation.block)) {
+          this.caretLocation.moveToBeginningOf(Block.getPreviousBlock(this.caretLocation.block));
         }
       }
 
@@ -287,8 +287,8 @@
     public navigateBlockDown(shouldExtendSelection: boolean) {
       this.setSelectionMode(shouldExtendSelection);
 
-      if (!this.caretLocation.block.isEndOfDocument) {
-        this.caretLocation.moveToBeginningOf(this.caretLocation.block.nextBlock);
+      if (!Block.isEndOfDocument(this.caretLocation.block)) {
+        this.caretLocation.moveToBeginningOf(Block.getNextBlock(this.caretLocation.block));
       } else {
         this.caretLocation.moveToEndOf(this.caretLocation.block);
       }
@@ -325,13 +325,13 @@
       } else if (this.caretLocation.isBeginningOfBlock) {
         var block = this.caretLocation.block;
 
-        if (block.isBeginningOfDocument) {
+        if (Block.isBeginningOfDocument(block)) {
           // can't do anything, we're at the beginning
           return;
         }
 
         // TODO handle parents/children
-        this.caretLocation = this.documentModel.mergeBlocks(block.previousBlock, block);
+        this.caretLocation = this.documentModel.mergeBlocks(Block.getPreviousBlock(block), block);
       } else {
         this.caretLocation.moveBackwardInBlock();
         this.caretLocation.removeNextInBlock();
@@ -349,12 +349,12 @@
       } else if (this.caretLocation.isEndOfBlock) {
         var block = this.caretLocation.block;
 
-        if (block.isEndOfDocument) {
+        if (Block.isEndOfDocument(block)) {
           // can't do anything, we're at the end
           return;
         }
 
-        this.caretLocation = this.documentModel.mergeBlocks(block, block.nextBlock);
+        this.caretLocation = this.documentModel.mergeBlocks(block, Block.getNextBlock(block));
       } else {
         this.caretLocation.removeNextInBlock();
         //this.position.block.element.removeChild(this.position.nextElement);

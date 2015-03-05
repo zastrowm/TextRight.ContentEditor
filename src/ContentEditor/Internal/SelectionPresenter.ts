@@ -34,8 +34,8 @@
       var endPosition = selectionEnd.getCursorPosition();
       var startPosition = selectionStart.getCursorPosition();
 
-      var endBlock = HtmlUtils.getBoundingClientRectOfElement(selectionEnd.block.contentElement);
-      var startBlock = HtmlUtils.getBoundingClientRectOfElement(selectionStart.block.contentElement);
+      var endBlock = HtmlUtils.getBoundingClientRectOfElement(Block.getContentElement(selectionEnd.block));
+      var startBlock = HtmlUtils.getBoundingClientRectOfElement(Block.getContentElement(selectionStart.block));
 
       var isOnSameLine = startPosition.isInlineWith(endPosition);
 
