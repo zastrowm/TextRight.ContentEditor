@@ -150,8 +150,8 @@
      * Retrieves a document cursor which represents the end of this block.
      * @return A DocumentCursor representing the end of this block.
      */
-    public static getEnd(block: Block): DocumentCursor {
-      var cursor = new DocumentCursor(null, null, null);
+    public static getEnd(documentModel: DocumentModel, block: Block): DocumentCursor {
+      var cursor = new DocumentCursor(documentModel, null, null, null);
       cursor.moveToEndOf(block);
       return cursor;
     }
@@ -160,8 +160,8 @@
      * Retrieves a document cursor which represents the beginning of this block.
      * @return A DocumentCursor representing the beginning of this block.
      */
-    public static getBeginning(block: Block): DocumentCursor {
-      var cursor = new DocumentCursor(null, null, null);
+    public static getBeginning(documentModel: DocumentModel,block: Block): DocumentCursor {
+      var cursor = new DocumentCursor(documentModel, null, null, null);
       cursor.moveToBeginningOf(block);
       return cursor;
     }

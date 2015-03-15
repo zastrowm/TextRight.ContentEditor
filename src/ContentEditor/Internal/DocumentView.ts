@@ -36,8 +36,8 @@
       this.characterCategorizer = CharacterCategorizer.instance;
 
       this.documentModel = new DocumentModel(element);
-      this.caretLocation = Block.getBeginning(this.documentModel.firstBlock);
-      this.selectionStart = Block.getBeginning(this.documentModel.firstBlock);
+      this.caretLocation = Block.getBeginning(this.documentModel,this.documentModel.firstBlock);
+      this.selectionStart = Block.getBeginning(this.documentModel, this.documentModel.firstBlock);
 
       this.initializeTextArea();
 

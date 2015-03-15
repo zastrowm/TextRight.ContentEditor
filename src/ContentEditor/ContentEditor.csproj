@@ -35,7 +35,8 @@
   <ItemGroup>
     <TypeScriptCompile Include="Extensions.ts" />
     <TypeScriptCompile Include="Internal\Block.ts" />
-    <TypeScriptCompile Include="Internal\DocumentCache.ts" />
+    <TypeScriptCompile Include="Internal\Caches\CachedNodeRectManager.ts" />
+    <TypeScriptCompile Include="Internal\Caches\DocumentCache.ts" />
     <TypeScriptCompile Include="Internal\CaretPresenter.ts" />
     <TypeScriptCompile Include="Internal\CharacterCategorizer.ts" />
     <TypeScriptCompile Include="Internal\CursorNavigationState.ts" />
@@ -48,9 +49,12 @@
     <TypeScriptCompile Include="Internal\Rect.ts" />
     <TypeScriptCompile Include="Internal\SelectionPresenter.ts" />
     <TypeScriptCompile Include="Internal\DocumentInputProcessor.ts" />
+    <TypeScriptCompile Include="Internal\Util\Logging.ts" />
+    <TypeScriptCompile Include="Internal\Util\Strings.ts" />
     <TypeScriptCompile Include="TextRight.ts" />
     <TypeScriptCompile Include="Utils.ts" />
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
   </PropertyGroup>
@@ -80,6 +84,7 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <TypeScriptRemoveComments>true</TypeScriptRemoveComments>

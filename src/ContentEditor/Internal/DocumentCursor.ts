@@ -9,9 +9,15 @@
      * Constructor.
      */
     constructor(
+      public documentModel: DocumentModel,
       public block: Block,
       public spanElement: HTMLSpanElement,
       public textNode: Node) {
+
+      if (documentModel == null)
+        throw "documentModel cannot be null";
+
+      // TODO move all cursor actions that require the DocumentModel into a separate class
     }
 
     /**
@@ -56,7 +62,7 @@
      * @return A copy of this object.
      */
     public clone(): DocumentCursor {
-      return new DocumentCursor(this.block, this.spanElement, this.textNode);
+      return new DocumentCursor(this.documentModel, this.block, this.spanElement, this.textNode);
     }
 
     /**
@@ -119,16 +125,16 @@
     public getCursorPosition(): Rect {
       if (this.isBeginningOfBlock) {
         // the only thing we have a position of is the first span
-        return DocumentCursor.rightOf(HtmlUtils.getBoundingClientRectOfElement(this.previousSpan));
+        return DocumentCursor.rightOf(this.documentModel.getLayoutRectOf(this.previousSpan));
       }
 
       if (this.isEndOfBlock) {
         // we don't have a nextNode so the block below will not work
-        return DocumentCursor.rightOf(HtmlUtils.getBoundingClientRectOf(this.textNode));
+        return DocumentCursor.rightOf(this.documentModel.getLayoutRectOf(this.textNode));
       }
 
-      var rect = HtmlUtils.getBoundingClientRectOf(this.textNode);
-      var nextRect = HtmlUtils.getBoundingClientRectOf(this.nextNode);
+      var rect = this.documentModel.getLayoutRectOf(this.textNode);
+      var nextRect = this.documentModel.getLayoutRectOf(this.nextNode);
 
       var point: Rect;
 

@@ -1,6 +1,10 @@
 ﻿module TextRight.Editor.Internal {
   import HtmlUtils = TextRight.Utils.HtmlUtils;
   import MathUtils = TextRight.Utils.MathUtils;
+  import CachedNodeRectManager = TextRight.Internal.Caches.CachedNodeRectManager;
+  import Strings = TextRight.Internal.Utils.Strings;
+  import Logger = TextRight.Internal.Util.Logger;
+
   var carriageReturn = "\r";
   var newline = "\n";
 
@@ -8,6 +12,7 @@
     private firstBlockIndicator: HTMLElement;
     private lastBlockIndicator: HTMLElement;
     private cache: DocumentCache;
+    private sizeCache: CachedNodeRectManager;
 
     /**
      * Create a new editable document from a div element
@@ -19,6 +24,7 @@
     constructor(private element: HTMLDivElement) {
 
       this.cache = new DocumentCache(this);
+      this.sizeCache = new CachedNodeRectManager();
 
       // we're gonna put the text back later
       var text = element.textContent;
@@ -35,7 +41,7 @@
       var block = Block.createNewBlock();
 
       this.insertBlockAfter(first, block);
-      this.insertText(Block.getBeginning(block), text);
+      this.insertText(Block.getBeginning(this, block), text);
     }
 
     /**
@@ -76,10 +82,20 @@
 
       var element = document.elementFromPoint(x - window.pageXOffset, y - pageYOffset);
 
+      if (element === null) {
+        Logger.error(Strings.format("Null Element @ {0},{1}; offset = {2},{3}",
+          x,
+          y,
+          window.pageXOffset,
+          window.pageYOffset));
+        return null;
+      }
+
       if (Block.isSpan(element)) {
         
         // search through to find the span
         var position = new DocumentCursor(
+          this,
           Block.blockFromSpan(element),
           <HTMLSpanElement>element,
           element.firstChild);
@@ -104,8 +120,10 @@
           return this.getCursorForPositionForBlock(x, y, this.firstBlock);
         } else if (y >= endPosition) {
           return this.getCursorForPositionForBlock(x, y, this.lastBlock);
+        } else if (element.nodeName === "INPUT") {
+          console.error("Hit Input Box");
         } else {
-          console.error("{A91266BD-CFD1-4C8F-AE57-76FBBD9613F6}", element, x, y);
+          console.error("{A91266BD-CFD1-4C8F-AE57-76FBBD9613F6}");
         }
       }
 
@@ -123,7 +141,7 @@
 
       // TODO optimize so that we don't go through EVERY span and so that
       // if we're towards the end, we start from the beginning
-      var cursor = Block.getBeginning(block);
+      var cursor = Block.getBeginning(this, block);
       cursor.moveTowardsPosition(x, y);
       return cursor;
     }
@@ -141,7 +159,16 @@
       // TODO check if we already inserted text elsewhere
       // TODO handle newlines
 
+      this.sizeCache.reset();
+
       return this.insertTextAtCursor(cursor, text);
+    }
+
+    /**
+     * Get the Rect for the given node.
+     */
+    public getLayoutRectOf(node: Node): Rect {
+      return this.sizeCache.lookup(node);
     }
 
    
@@ -198,11 +225,12 @@
     public mergeBlocks(mergeInto: Block, blockToMerge: Block): DocumentCursor {
 
       this.cache.invalidateIndicesBefore(mergeInto);
+      this.sizeCache.reset();
 
       if (Block.isEmpty(blockToMerge)) {
         // we're merging in an empty block, so just remove the block
         this.removeBlock(blockToMerge);
-        return Block.getEnd(mergeInto);
+        return Block.getEnd(this, mergeInto);
       }
 
       var wasMergeIntoBlockEmpty = Block.isEmpty(mergeInto);
@@ -210,10 +238,10 @@
 
       if (wasMergeIntoBlockEmpty) {
         this.appendToBlock(mergeInto, oldContent);
-        return Block.getBeginning(mergeInto);
+        return Block.getBeginning(this, mergeInto);
       }
 
-      var newCursor = Block.getEnd(mergeInto);
+      var newCursor = Block.getEnd(this, mergeInto);
       newCursor.moveBackwardInBlock();
       this.appendToBlock(mergeInto, oldContent);
       newCursor.moveForward();
@@ -229,9 +257,11 @@
      * @param {DocumentCursor} cursor The cursor whose position determines the split point.
      */
     public splitBlock(cursor: DocumentCursor): void {
-      var newBlock = Block.createNewBlock();
 
       this.cache.invalidateIndicesBefore(cursor.block);
+      this.sizeCache.reset();
+
+      var newBlock = Block.createNewBlock();
 
       // simple: add a blank paragraph before
       if (cursor.isBeginningOfBlock) {
