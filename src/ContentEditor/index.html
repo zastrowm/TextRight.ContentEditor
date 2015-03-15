@@ -16,7 +16,8 @@
   <script src="Internal/CursorNavigationState.js"></script>
   <script src="Internal/DocumentCursor.js"></script>
   <script src="Internal/ISnapshotToken.js"></script>
-  <script src="Internal/DocumentCache.js"></script>
+  <script src="Internal/Caches/CachedNodeRectManager.js"></script>
+  <script src="Internal/Caches/DocumentCache.js"></script>
   <script src="Internal/DocumentModel.js"></script>
   <script src="Internal/SelectionPresenter.js"></script>
   <script src="Internal/CaretPresenter.js"></script>
@@ -82,9 +83,11 @@
     #document .__tr__-textareaInput {
       opacity: 0;
       position: absolute;
-      height: 1px !important;
+      height: 0 !important;
       pointer-events: none;
-      width: 1px;
+      padding: 0;
+      border: 0;
+      width: 0;
     }
 
     #document.debug .__tr__-textareaInput {

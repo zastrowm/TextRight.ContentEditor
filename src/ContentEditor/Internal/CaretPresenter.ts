@@ -34,7 +34,7 @@
       var pos = cursor.getCursorPosition();
 
       HtmlUtils.positionElement(this.cursorElement, pos.top, pos.left, pos.height, 1);
-      HtmlUtils.positionElement(this.inputTextArea, pos.top, pos.left, pos.height, 1);
+      HtmlUtils.positionElement(this.inputTextArea, pos.top + 5, pos.left - 5, pos.height, 1);
     }
 
     /**
