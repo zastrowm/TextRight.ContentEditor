@@ -12,7 +12,8 @@
     private firstBlockIndicator: HTMLElement;
     private lastBlockIndicator: HTMLElement;
     private cache: DocumentCache;
-    private sizeCache: CachedNodeRectManager;
+
+    private blockPositions: SnapshotTokenProvider;
 
     /**
      * Create a new editable document from a div element
@@ -23,8 +24,9 @@
      */
     constructor(private element: HTMLDivElement) {
 
+      this.blockPositions = new SnapshotTokenProvider();
+
       this.cache = new DocumentCache(this);
-      this.sizeCache = new CachedNodeRectManager();
 
       // we're gonna put the text back later
       var text = element.textContent;
@@ -159,7 +161,9 @@
       // TODO check if we already inserted text elsewhere
       // TODO handle newlines
 
-      this.sizeCache.reset();
+      var cache = BlockElementCache.getFor(cursor.block);
+      cache.resetSizeData();
+      this.blockPositions.increment();
 
       return this.insertTextAtCursor(cursor, text);
     }
@@ -167,8 +171,8 @@
     /**
      * Get the Rect for the given node.
      */
-    public getLayoutRectOf(node: Node): Rect {
-      return this.sizeCache.lookup(node);
+    public getLayoutRectOf(block: Block, node: Node): Rect {
+      return BlockElementCache.getFor(block).lookupSizeData(this.blockPositions, block, node);
     }
 
    
@@ -224,8 +228,11 @@
      */
     public mergeBlocks(mergeInto: Block, blockToMerge: Block): DocumentCursor {
 
+      this.blockPositions.increment();
       this.cache.invalidateIndicesBefore(mergeInto);
-      this.sizeCache.reset();
+      // todo optimize this
+      BlockElementCache.getFor(mergeInto).resetSizeData();
+      BlockElementCache.getFor(blockToMerge).resetSizeData();
 
       if (Block.isEmpty(blockToMerge)) {
         // we're merging in an empty block, so just remove the block
@@ -258,8 +265,9 @@
      */
     public splitBlock(cursor: DocumentCursor): void {
 
+      this.blockPositions.increment();
       this.cache.invalidateIndicesBefore(cursor.block);
-      this.sizeCache.reset();
+      BlockElementCache.getFor(cursor.block).resetSizeData();
 
       var newBlock = Block.createNewBlock();
 
@@ -393,7 +401,5 @@
     private insertBlockBefore(block: Block, newBlock: Block) {
       Block.getContainerElement(block).parentElement.insertBefore(Block.getContainerElement(newBlock), Block.getContainerElement(block));
     }
-
-
   }
 }

@@ -14,7 +14,14 @@
     constructor(public top: number, public left: number, public height: number, public width: number) {
     }
 
-     /**
+    /**
+     * Create a new Rect with the same values as this one
+     */
+    public clone(): Rect {
+      return new Rect(this.top, this.left, this.height, this.width);
+    }
+
+    /**
      * The height added to the top
      */
     public get bottom() {

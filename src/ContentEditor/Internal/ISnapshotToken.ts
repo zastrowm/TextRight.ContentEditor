@@ -10,34 +10,45 @@ module TextRight.Editor.Internal {
    */
   export interface ISnapshotToken {
 
+    /**
+     * Do not use.  Only exists so that we don't accidentally pass invalid properties to
+     * functions accepting ISnapshotToken.
+     */
+    __isnapshottoken__: boolean;
   }
 
   /**
    * Provides ISnapshotToken and creates unique tokens to give out to providers
    */
   export class SnapshotTokenProvider {
-    public token: number;
+    private internalToken: number;
 
     constructor() {
-      this.token = 1;
+      this.internalToken = 1;
     }
 
-    /**
-     * Move to the next cache index
-     */
-    public increment() {
-      this.token++;
+    /** Get the token that represents the current state. */
+    public get token(): ISnapshotToken {
+      return <any>this.internalToken;
+    }
 
-      if (this.token > maxIntBeforeRollover) {
-        this.token = 1;
+    /** Move to the next cache index */
+    public increment() {
+      this.internalToken++;
+
+      if (this.internalToken > maxIntBeforeRollover) {
+        this.internalToken = 1;
       }
     }
 
-    /**
-     * Check if a given token is current
-     */
+    /** Check if a given token is current */
     public isValid(token: ISnapshotToken) {
-      return this.token == token;
+      return this.token === token;
+    }
+
+    /** The default token to use. */
+    public static get defaultToken(): ISnapshotToken {
+      return <any>0;
     }
   }
 }

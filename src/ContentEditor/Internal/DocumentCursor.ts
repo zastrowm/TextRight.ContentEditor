@@ -125,16 +125,16 @@
     public getCursorPosition(): Rect {
       if (this.isBeginningOfBlock) {
         // the only thing we have a position of is the first span
-        return DocumentCursor.rightOf(this.documentModel.getLayoutRectOf(this.previousSpan));
+        return DocumentCursor.rightOf(this.documentModel.getLayoutRectOf(this.block, this.previousSpan));
       }
 
       if (this.isEndOfBlock) {
         // we don't have a nextNode so the block below will not work
-        return DocumentCursor.rightOf(this.documentModel.getLayoutRectOf(this.textNode));
+        return DocumentCursor.rightOf(this.documentModel.getLayoutRectOf(this.block, this.textNode));
       }
 
-      var rect = this.documentModel.getLayoutRectOf(this.textNode);
-      var nextRect = this.documentModel.getLayoutRectOf(this.nextNode);
+      var rect = this.documentModel.getLayoutRectOf(this.block,this.textNode);
+      var nextRect = this.documentModel.getLayoutRectOf(this.block,this.nextNode);
 
       var point: Rect;
 
